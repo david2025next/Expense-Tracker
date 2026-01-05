@@ -280,6 +280,7 @@ private fun InputField(
                     contentDescription = label
                 )
             },
+            maxLines = 3,
             singleLine = isNumber,
             keyboardOptions = KeyboardOptions(
                 keyboardType = if (isNumber) KeyboardType.Decimal else KeyboardType.Text
