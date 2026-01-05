@@ -1,6 +1,5 @@
 package com.example.expensetracker
 
-import android.util.Log
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
@@ -18,10 +17,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Notes
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Notes
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
@@ -40,7 +37,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,6 +50,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.expensetracker.utils.Category
 import com.example.expensetracker.utils.categoriesMenu
 import java.text.SimpleDateFormat
@@ -66,12 +64,9 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
-fun AddExpenseScreen(modifier: Modifier = Modifier) {
+fun AddExpenseScreen(modifier: Modifier = Modifier, viewModel: AddExpenseViewModel = viewModel()) {
 
-    var amount by remember { mutableStateOf("") }
-    var categorySelected by remember { mutableStateOf(categoriesMenu.first()) }
-    var selectedDate by remember { mutableLongStateOf(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()) }
-    var description by remember { mutableStateOf("") }
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -101,27 +96,29 @@ fun AddExpenseScreen(modifier: Modifier = Modifier) {
         ) {
 
             InputField(
-                value = amount,
+                value = state.amount,
                 isNumber = true,
                 label = "Amount",
-                icon = Icons.Default.AttachMoney
-            ) { amount = it }
+                icon = Icons.Default.AttachMoney,
+                onValueChange = viewModel::uiEvent
+            )
 
             CategoryMenu(
-                categorySelected = categorySelected
-            ) { categorySelected = it }
+                categorySelected = state.category,
+                onCategorySelected = viewModel::uiEvent
+            )
 
             DateTransaction(
-                selectedDate = selectedDate
-            ) {
-                selectedDate = it
-            }
+                selectedDate = state.date,
+                onDateSelected = viewModel::uiEvent
+            )
 
             InputField(
-                value = description,
+                value = state.description,
                 label = "Description",
-                icon = Icons.AutoMirrored.Filled.Notes
-            ) {description = it }
+                icon = Icons.AutoMirrored.Filled.Notes,
+                onValueChange = viewModel::uiEvent
+            )
 
             Button(
                 onClick = {},
@@ -144,7 +141,7 @@ fun AddExpenseScreen(modifier: Modifier = Modifier) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DateTransaction(selectedDate: Long, onDateSelected: (Long) -> Unit) {
+private fun DateTransaction(selectedDate: Long, onDateSelected: (FormEvent) -> Unit) {
 
     var showModal by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
@@ -179,7 +176,7 @@ private fun DateTransaction(selectedDate: Long, onDateSelected: (Long) -> Unit) 
             onDismissRequest = { showModal = false },
             confirmButton = {
                 TextButton(onClick = {
-                    datePickerState.selectedDateMillis?.let { onDateSelected(it) }
+                    datePickerState.selectedDateMillis?.let { onDateSelected(FormEvent.DateChanged(it)) }
                     showModal = false
                 }) {
                     Text("OK")
@@ -203,7 +200,7 @@ fun convertMillisToDate(millis: Long): String {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CategoryMenu(categorySelected: Category, onCategorySelected: (Category) -> Unit) {
+private fun CategoryMenu(categorySelected: String, onCategorySelected: (FormEvent) -> Unit) {
 
     var expanded by remember { mutableStateOf(false) }
 
@@ -215,7 +212,7 @@ private fun CategoryMenu(categorySelected: Category, onCategorySelected: (Catego
         Column {
             Text("Category", modifier = Modifier.padding(bottom = 5.dp))
             OutlinedTextField(
-                value = categorySelected.name,
+                value = categorySelected,
                 onValueChange = {},
                 readOnly = true,
                 shape = RoundedCornerShape(12.dp),
@@ -249,7 +246,7 @@ private fun CategoryMenu(categorySelected: Category, onCategorySelected: (Catego
                         }
                     },
                     onClick = {
-                        onCategorySelected(category)
+                        onCategorySelected(FormEvent.CategoryChanged(category.name))
                         expanded = false
                     }
                 )
@@ -264,7 +261,7 @@ private fun InputField(
     icon: ImageVector,
     label: String,
     isNumber: Boolean = false,
-    onValueChange: (String) -> Unit
+    onValueChange: (FormEvent) -> Unit
 ) {
     Column{
         Text(
@@ -273,7 +270,11 @@ private fun InputField(
         )
         OutlinedTextField(
             value = value,
-            onValueChange = onValueChange,
+            onValueChange ={
+                if(isNumber)
+                    onValueChange(FormEvent.AmountChanged(it))
+                else onValueChange(FormEvent.DescriptionChanged(it))
+            },
             leadingIcon = {
                 Icon(
                     imageVector = icon,
