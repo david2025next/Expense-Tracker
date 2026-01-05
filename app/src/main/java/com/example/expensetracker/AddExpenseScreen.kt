@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,6 +30,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -73,7 +75,8 @@ fun AddExpenseScreen(modifier: Modifier = Modifier, viewModel: AddExpenseViewMod
             TopAppBar(
                 title = {
                     Text(
-                        text = "Add Transaction"
+                        text = "Add Transaction",
+                        style = MaterialTheme.typography.titleLarge
                     )
                 },
                 navigationIcon = {
@@ -127,7 +130,8 @@ fun AddExpenseScreen(modifier: Modifier = Modifier, viewModel: AddExpenseViewMod
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .height(52.dp),
+                shape = RoundedCornerShape(16.dp),
                 contentPadding = PaddingValues(10.dp)
             ) {
                 Text(
@@ -152,6 +156,7 @@ private fun DateTransaction(selectedDate: Long, onDateSelected: (FormEvent) -> U
         OutlinedTextField(
             value = convertMillisToDate(selectedDate),
             onValueChange = {},
+            textStyle = MaterialTheme.typography.headlineSmall,
             shape = RoundedCornerShape(16.dp),
             readOnly = true,
             trailingIcon = {
@@ -213,6 +218,7 @@ private fun CategoryMenu(categorySelected: String, onCategorySelected: (FormEven
             Text("Category", modifier = Modifier.padding(bottom = 5.dp))
             OutlinedTextField(
                 value = categorySelected,
+                textStyle = MaterialTheme.typography.headlineSmall,
                 onValueChange = {},
                 readOnly = true,
                 shape = RoundedCornerShape(12.dp),
@@ -266,10 +272,13 @@ private fun InputField(
     Column{
         Text(
             "$label ${if (isNumber) "" else " (optional)"}",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 5.dp)
         )
         OutlinedTextField(
             value = value,
+            textStyle = MaterialTheme.typography.headlineSmall,
             onValueChange ={
                 if(isNumber)
                     onValueChange(FormEvent.AmountChanged(it))
@@ -278,7 +287,8 @@ private fun InputField(
             leadingIcon = {
                 Icon(
                     imageVector = icon,
-                    contentDescription = label
+                    contentDescription = label,
+                    tint = MaterialTheme.colorScheme.primary
                 )
             },
             maxLines = 3,
