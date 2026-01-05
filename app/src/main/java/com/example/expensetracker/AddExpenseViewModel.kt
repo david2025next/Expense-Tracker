@@ -37,7 +37,7 @@ class AddExpenseViewModel : ViewModel() {
 }
 
 data class FormState(
-    val amount : String = "0",
+    val amount : String = "",
     val description : String = "",
     val category : String = categoriesMenu.first().name,
     val date : Long = getInitialDate()
