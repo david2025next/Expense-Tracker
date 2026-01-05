@@ -1,5 +1,6 @@
 package com.example.expensetracker
 
+import android.util.Log
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
@@ -67,7 +68,7 @@ import java.util.Locale
 @Composable
 fun AddExpenseScreen(modifier: Modifier = Modifier) {
 
-    var amount by remember { mutableIntStateOf(0) }
+    var amount by remember { mutableStateOf("") }
     var categorySelected by remember { mutableStateOf(categoriesMenu.first()) }
     var selectedDate by remember { mutableLongStateOf(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()) }
     var description by remember { mutableStateOf("") }
@@ -100,11 +101,11 @@ fun AddExpenseScreen(modifier: Modifier = Modifier) {
         ) {
 
             InputField(
-                value = amount.toString(),
+                value = amount,
                 isNumber = true,
                 label = "Amount",
                 icon = Icons.Default.AttachMoney
-            ) { amount = it.toInt() }
+            ) { amount = it }
 
             CategoryMenu(
                 categorySelected = categorySelected
@@ -281,7 +282,7 @@ private fun InputField(
             },
             singleLine = isNumber,
             keyboardOptions = KeyboardOptions(
-                keyboardType = if (isNumber) KeyboardType.Number else KeyboardType.Text
+                keyboardType = if (isNumber) KeyboardType.Decimal else KeyboardType.Text
             ),
             modifier = Modifier.fillMaxWidth(),
             suffix = {
