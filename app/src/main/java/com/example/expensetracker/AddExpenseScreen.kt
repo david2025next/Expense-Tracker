@@ -1,6 +1,7 @@
 package com.example.expensetracker
 
 import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
@@ -162,15 +163,7 @@ private fun DateTransaction(selectedDate: Long, onDateSelected: (Long) -> Unit) 
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .pointerInput(selectedDate) {
-                    awaitEachGesture {
-                        awaitFirstDown(pass = PointerEventPass.Initial)
-                        val upEvent = waitForUpOrCancellation(pass = PointerEventPass.Initial)
-                        if (upEvent != null) {
-                            showModal = true
-                        }
-                    }
-                }
+                .clickable(onClick = {showModal = true})
         )
 
     }
