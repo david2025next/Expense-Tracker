@@ -53,6 +53,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.expensetracker.utils.Category
 import com.example.expensetracker.utils.categoriesMenu
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -66,7 +67,11 @@ import java.util.Locale
 @Composable
 fun AddExpenseScreen(modifier: Modifier = Modifier) {
 
-    var amount by remember { mutableStateOf(0) }
+    var amount by remember { mutableIntStateOf(0) }
+    var categorySelected by remember { mutableStateOf(categoriesMenu.first()) }
+    var selectedDate by remember { mutableLongStateOf(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()) }
+    var description by remember { mutableStateOf("") }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -99,18 +104,23 @@ fun AddExpenseScreen(modifier: Modifier = Modifier) {
                 isNumber = true,
                 label = "Amount",
                 icon = Icons.Default.AttachMoney
-            ) { amount = it.toInt()}
+            ) { amount = it.toInt() }
 
-            CategoryMenu()
+            CategoryMenu(
+                categorySelected = categorySelected
+            ) { categorySelected = it }
+
             DateTransaction(
-                selectedDate = 10L
-            ) { }
+                selectedDate = selectedDate
+            ) {
+                selectedDate = it
+            }
 
             InputField(
-                value = "",
+                value = description,
                 label = "Description",
                 icon = Icons.AutoMirrored.Filled.Notes
-            ) { }
+            ) {description = it }
 
             Button(
                 onClick = {},
@@ -136,7 +146,9 @@ fun AddExpenseScreen(modifier: Modifier = Modifier) {
 private fun DateTransaction(selectedDate: Long, onDateSelected: (Long) -> Unit) {
 
     var showModal by remember { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState()
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = selectedDate
+    )
     Column() {
         Text(text = "Date", modifier = Modifier.padding(bottom = 5.dp))
         OutlinedTextField(
@@ -190,10 +202,9 @@ fun convertMillisToDate(millis: Long): String {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CategoryMenu() {
+private fun CategoryMenu(categorySelected: Category, onCategorySelected: (Category) -> Unit) {
 
     var expanded by remember { mutableStateOf(false) }
-    var categorySelected by remember { mutableStateOf(categoriesMenu.first()) }
 
     ExposedDropdownMenuBox(
         expanded = expanded,
@@ -237,7 +248,7 @@ private fun CategoryMenu() {
                         }
                     },
                     onClick = {
-                        categorySelected = category
+                        onCategorySelected(category)
                         expanded = false
                     }
                 )
@@ -254,9 +265,7 @@ private fun InputField(
     isNumber: Boolean = false,
     onValueChange: (String) -> Unit
 ) {
-    Column(
-
-    ) {
+    Column{
         Text(
             "$label ${if (isNumber) "" else " (optional)"}",
             modifier = Modifier.padding(bottom = 5.dp)
@@ -270,7 +279,7 @@ private fun InputField(
                     contentDescription = label
                 )
             },
-            singleLine = if (isNumber) true else false,
+            singleLine = isNumber,
             keyboardOptions = KeyboardOptions(
                 keyboardType = if (isNumber) KeyboardType.Number else KeyboardType.Text
             ),
@@ -281,46 +290,6 @@ private fun InputField(
             },
             shape = RoundedCornerShape(12.dp)
         )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun InputFieldNumberPreview() {
-    var amount by remember { mutableIntStateOf(0) }
-    InputField(
-        value = amount.toString(),
-        isNumber = true,
-        label = "Amount",
-        icon = Icons.Default.AttachMoney
-    ) { amount = it.toInt() }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun InputFieldDescriptionPreview() {
-    var description by remember { mutableStateOf("") }
-    InputField(
-        value = description,
-        isNumber = false,
-        label = "Description",
-        icon = Icons.AutoMirrored.Filled.Notes
-    ) { description = it }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-private fun CategoryMenuPreview() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-
-        ) {
-        CategoryMenu()
     }
 }
 
