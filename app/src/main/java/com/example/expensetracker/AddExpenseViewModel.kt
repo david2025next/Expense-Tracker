@@ -8,7 +8,9 @@ import kotlinx.coroutines.flow.update
 import java.time.LocalDate
 import java.time.ZoneId
 
-class AddExpenseViewModel : ViewModel() {
+class AddExpenseViewModel(
+    private val validationAmount: ValidationAmount = ValidationAmount()
+) : ViewModel() {
 
     private val _state = MutableStateFlow(FormState())
     val state = _state.asStateFlow()
@@ -33,11 +35,18 @@ class AddExpenseViewModel : ViewModel() {
         }
     }
 
-    private fun submit(){}
+    private fun submit(){
+        val result = validationAmount.execute(state.value.amount)
+        if(!result.successful){
+            _state.update { it.copy(amountError = result.errorMessage) }
+            return
+        }
+    }
 }
 
 data class FormState(
     val amount : String = "",
+    val amountError : String ? = null,
     val description : String = "",
     val category : String = categoriesMenu.first().name,
     val date : Long = getInitialDate()

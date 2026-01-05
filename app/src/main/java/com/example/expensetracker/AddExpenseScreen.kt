@@ -56,6 +56,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.expensetracker.utils.Category
 import com.example.expensetracker.utils.categoriesMenu
+import com.example.expensetracker.utils.convertMillisToDate
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.ZoneId
@@ -103,7 +104,8 @@ fun AddExpenseScreen(modifier: Modifier = Modifier, viewModel: AddExpenseViewMod
                 isNumber = true,
                 label = "Amount",
                 icon = Icons.Default.AttachMoney,
-                onValueChange = viewModel::uiEvent
+                onValueChange = viewModel::uiEvent,
+                error = state.amountError
             )
 
             CategoryMenu(
@@ -120,11 +122,12 @@ fun AddExpenseScreen(modifier: Modifier = Modifier, viewModel: AddExpenseViewMod
                 value = state.description,
                 label = "Description",
                 icon = Icons.AutoMirrored.Filled.Notes,
+                error = null,
                 onValueChange = viewModel::uiEvent
             )
 
             Button(
-                onClick = {},
+                onClick = {viewModel.uiEvent(FormEvent.Submit)},
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black
                 ),
@@ -198,10 +201,7 @@ private fun DateTransaction(selectedDate: Long, onDateSelected: (FormEvent) -> U
     }
 }
 
-fun convertMillisToDate(millis: Long): String {
-    val formatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
-    return formatter.format(Date(millis))
-}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -267,7 +267,8 @@ private fun InputField(
     icon: ImageVector,
     label: String,
     isNumber: Boolean = false,
-    onValueChange: (FormEvent) -> Unit
+    onValueChange: (FormEvent) -> Unit,
+    error : String ?
 ) {
     Column{
         Text(
@@ -303,6 +304,12 @@ private fun InputField(
             },
             shape = RoundedCornerShape(12.dp)
         )
+        if(error !=null){
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
     }
 }
 
