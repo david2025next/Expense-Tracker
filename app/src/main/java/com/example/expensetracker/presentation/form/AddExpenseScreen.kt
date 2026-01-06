@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
@@ -94,7 +95,7 @@ fun AddExpenseScreen(viewModel: AddExpenseViewModel = hiltViewModel(), backToHom
     Scaffold(
         snackbarHost = { SnackbarHost(snackBar) },
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = {
                     Text(
                         text = "Add Transaction",

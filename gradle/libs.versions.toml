@@ -15,8 +15,11 @@ lifecycleViewmodelCompose = "2.10.0"
 navigationCompose = "2.9.6"
 roomCompiler = "2.8.4"
 roomRuntime = "2.8.4"
+vico = "2.4.0"
 
 [libraries]
+vico-compose = { group = "com.patrykandpatrick.vico", name = "compose", version.ref = "vico" }
+vico-compose-m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vico" }
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
