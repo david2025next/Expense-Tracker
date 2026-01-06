@@ -2,6 +2,7 @@ package com.example.expensetracker.data
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy.Companion.REPLACE
 import androidx.room.Query
 import com.example.expensetracker.domain.service.ExpensePeriodTotals
 import kotlinx.coroutines.flow.Flow
@@ -10,8 +11,8 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ExpenseDao {
 
-//    @Insert
-//    fun insert()
+    @Insert(onConflict = REPLACE)
+    fun insert(expenseEntity: ExpenseEntity)
 
     @Query("""
         SELECT * FROM Expenses

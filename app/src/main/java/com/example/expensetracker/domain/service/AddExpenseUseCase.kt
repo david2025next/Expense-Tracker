@@ -7,5 +7,5 @@ class AddExpenseUseCase(
     private val expenseRepository: ExpenseRepository
 ) {
 
-    suspend operator fun invoke(expense: Expense){}
+    suspend operator fun invoke(expense: Expense) = expenseRepository.addExpense(expense)
 }

@@ -8,4 +8,5 @@ interface ExpenseRepository {
 
     fun getExpensePeriodTotals() : Flow<ExpensePeriodTotals>
     fun getRecentExpenses(limit: Int): Flow<List<Expense>>
+    suspend fun addExpense(expense: Expense)
 }

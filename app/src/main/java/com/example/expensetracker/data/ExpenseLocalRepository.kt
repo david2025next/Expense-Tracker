@@ -28,7 +28,17 @@ class ExpenseLocalRepository(
         expenseDao.getRecentExpenses(limit)
             .map { expenseEntities -> expenseEntities.map { it.toExpenseDomain() } }
 
+    override suspend fun addExpense(expense: Expense)  = expenseDao.insert(expense.toEntity())
+
 }
+
+
+fun Expense.toEntity() = ExpenseEntity(
+    title = title,
+    amount = amount,
+    date = date,
+    category = category
+)
 
 private fun ExpenseEntity.toExpenseDomain() = Expense(
     title = title,
