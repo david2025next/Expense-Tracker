@@ -54,7 +54,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.expensetracker.utils.Category
+import com.example.expensetracker.utils.CategoryMenu
 import com.example.expensetracker.utils.categoriesMenu
 import com.example.expensetracker.utils.convertMillisToDate
 import java.text.SimpleDateFormat

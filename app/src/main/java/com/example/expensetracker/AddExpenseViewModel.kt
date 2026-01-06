@@ -29,7 +29,7 @@ class AddExpenseViewModel(
             is FormEvent.DescriptionChanged ->{
                 _state.update { it.copy(description = event.description) }
             }
-            FormEvent.Submit ->{
+            is FormEvent.Submit ->{
                 submit()
             }
         }
