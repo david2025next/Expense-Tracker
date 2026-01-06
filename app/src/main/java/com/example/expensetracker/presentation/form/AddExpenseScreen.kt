@@ -92,10 +92,10 @@ fun AddExpenseScreen(modifier: Modifier = Modifier, viewModel: AddExpenseViewMod
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             InputField(
-                value = state.description,
+                value = state.title,
                 label = "Title",
                 icon = Icons.AutoMirrored.Filled.Notes,
-                error = null,
+                error = state.errorTitle,
                 onValueChange = viewModel::uiEvent
             )
 
@@ -275,7 +275,7 @@ private fun InputField(
             onValueChange ={
                 if(isNumber)
                     onValueChange(FormEvent.AmountChanged(it))
-                else onValueChange(FormEvent.DescriptionChanged(it))
+                else onValueChange(FormEvent.TitleChanged(it))
             },
             leadingIcon = {
                 Icon(
