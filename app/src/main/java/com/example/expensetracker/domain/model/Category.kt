@@ -23,3 +23,6 @@ val categories = listOf(
     Category("Divertissement", Icons.Filled.Movie),
     Category("Factures", Icons.Filled.Receipt)
 )
+
+// c'est une methode dangereuse aue je dois reparer
+fun findIconByCategoryName(name : String) : ImageVector = categories.find{it.name == name}?.icon!!
