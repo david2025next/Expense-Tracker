@@ -49,7 +49,9 @@ import java.util.Locale
 @Composable
 fun DashboardScreen(viewModel: DashboardViewModel = viewModel()) {
 
-    val state by viewModel.state.collectAsStateWithLifecycle()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val totalsExpensesPeriod  = state.totals
+    val recentExpenses = state.recent
 
     Scaffold(
         topBar = {
@@ -85,9 +87,9 @@ fun DashboardScreen(viewModel: DashboardViewModel = viewModel()) {
                 .padding(horizontal = 16.dp)
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-            ExpenseOverviewCard(state.totalExpenseThisMonth, state.totalExpenseThisWeek)
+            ExpenseOverviewCard(totalsExpensesPeriod.thisMonth, totalsExpensesPeriod.thisWeek)
             Spacer(modifier = Modifier.height(24.dp))
-            DailySpendIndicator(state.totalExpenseToday)
+            DailySpendIndicator(totalsExpensesPeriod.today)
             Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = "Activités récentes",
@@ -100,7 +102,7 @@ fun DashboardScreen(viewModel: DashboardViewModel = viewModel()) {
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(bottom = 80.dp)
             ) {
-                items(state.lastFourExpenses) { expense ->
+                items(recentExpenses.expenses) { expense ->
                     TransactionItem(expense)
                 }
             }

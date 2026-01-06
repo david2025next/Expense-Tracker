@@ -2,26 +2,55 @@ package com.example.expensetracker.presentation.home
 
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import androidx.lifecycle.viewModelScope
+import com.example.expensetracker.domain.service.GetExpensePeriodTotals
+import com.example.expensetracker.domain.service.GetRecentExpenses
+import com.example.expensetracker.utils.toUi
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 
-class DashboardViewModel : ViewModel() {
+class DashboardViewModel(
+    private val getExpensePeriodTotalsFlow: GetExpensePeriodTotals,
+    private val getRecentExpensesFlow: GetRecentExpenses
+) : ViewModel() {
 
-    private val _state = MutableStateFlow(DashboardState())
-    val state = _state.asStateFlow()
+    val uiState = getExpensePeriodTotalsFlow().combine(
+        getRecentExpensesFlow()
+    ) { totals, recentExpenses ->
+        val recentExpenses = recentExpenses.map { it.toUi() }
+        DashboardUiState(
+            totals = totals.toUi(),
+            recent = RecentExpenses(recentExpenses)
+        )
+    }.stateIn(
+        viewModelScope,
+        initialValue = DashboardUiState(),
+        started = SharingStarted.WhileSubscribed(5000L)
+    )
 }
 
+
+
 data class ExpenseUi(
-    val title : String,
-    val amount : Long,
-    val date : String,
-    val iconCategory : ImageVector,
-    val category : String
+    val title: String,
+    val amount: Long,
+    val date: String,
+    val iconCategory: ImageVector,
+    val category: String
 )
 
-data class DashboardState(
-    val totalExpenseThisMonth : Long = 0,
-    val totalExpenseThisWeek: Long = 0,
-    val totalExpenseToday : Long = 0,
-    val lastFourExpenses : List<ExpenseUi> = listOf()
+data class DashboardUiState(
+    val totals: TotalsExpensePeriod = TotalsExpensePeriod(),
+    val recent: RecentExpenses = RecentExpenses()
+)
+
+data class TotalsExpensePeriod(
+    val today: Long = 0,
+    val thisWeek: Long = 0,
+    val thisMonth: Long = 0
+)
+
+data class RecentExpenses(
+    val expenses: List<ExpenseUi> = listOf()
 )
