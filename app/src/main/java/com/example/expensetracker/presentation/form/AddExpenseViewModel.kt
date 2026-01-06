@@ -3,6 +3,7 @@ package com.example.expensetracker.presentation.form
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.expensetracker.domain.model.Expense
+import com.example.expensetracker.domain.model.categories
 import com.example.expensetracker.domain.service.AddExpenseUseCase
 import com.example.expensetracker.domain.service.ValidationAmount
 import com.example.expensetracker.domain.service.ValidationTitle
@@ -38,7 +39,7 @@ class AddExpenseViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000L)
         )
 
-    fun navigateEvent(){
+    fun navigateEvent() {
         _state.update { FormState() }
         viewModelScope.launch {
             _eventUiChannel.send(UiEvent.NavigateToHome)
@@ -99,9 +100,9 @@ class AddExpenseViewModel @Inject constructor(
     }
 }
 
-sealed class UiEvent{
+sealed class UiEvent {
     data object Idle : UiEvent()
-    data class ShowSnackBar(val message : String): UiEvent()
+    data class ShowSnackBar(val message: String) : UiEvent()
     data object NavigateToHome : UiEvent()
 }
 
@@ -110,7 +111,7 @@ data class FormState(
     val amountError: String? = null,
     val title: String = "",
     val errorTitle: String? = null,
-    val category: String = categoriesMenu.first().name,
+    val category: String = categories.first().name,
     val date: Long = getInitialDate()
 )
 

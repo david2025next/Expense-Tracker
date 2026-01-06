@@ -54,6 +54,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.expensetracker.domain.model.categories
@@ -63,18 +64,19 @@ import com.example.expensetracker.utils.convertMillisToDate
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
-fun AddExpenseScreen(viewModel: AddExpenseViewModel = viewModel(), backToHome : ()-> Unit = {}) {
+fun AddExpenseScreen(viewModel: AddExpenseViewModel = hiltViewModel(), backToHome: () -> Unit = {}) {
 
     val state by viewModel.state.collectAsStateWithLifecycle()
     val uiEvent by viewModel.eventUiChannel.collectAsStateWithLifecycle()
     val snackBar = remember { SnackbarHostState() }
 
     LaunchedEffect(key1 = uiEvent) {
-        when(uiEvent){
+        when (uiEvent) {
             UiEvent.Idle -> {}
             UiEvent.NavigateToHome -> {
                 backToHome()
             }
+
             is UiEvent.ShowSnackBar -> {
                 snackBar.showSnackbar(
                     message = (uiEvent as UiEvent.ShowSnackBar).message
@@ -94,7 +96,7 @@ fun AddExpenseScreen(viewModel: AddExpenseViewModel = viewModel(), backToHome : 
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = {viewModel.navigateEvent()}) {
+                    IconButton(onClick = { viewModel.navigateEvent() }) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             null
@@ -139,7 +141,7 @@ fun AddExpenseScreen(viewModel: AddExpenseViewModel = viewModel(), backToHome : 
             )
 
             Button(
-                onClick = {viewModel.uiFormEvent(FormEvent.Submit)},
+                onClick = { viewModel.uiFormEvent(FormEvent.Submit) },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black
                 ),
@@ -196,7 +198,13 @@ private fun DateTransaction(selectedDate: Long, onDateSelected: (FormEvent) -> U
             onDismissRequest = { showModal = false },
             confirmButton = {
                 TextButton(onClick = {
-                    datePickerState.selectedDateMillis?.let { onDateSelected(FormEvent.DateChanged(it)) }
+                    datePickerState.selectedDateMillis?.let {
+                        onDateSelected(
+                            FormEvent.DateChanged(
+                                it
+                            )
+                        )
+                    }
                     showModal = false
                 }) {
                     Text("OK")
@@ -212,7 +220,6 @@ private fun DateTransaction(selectedDate: Long, onDateSelected: (FormEvent) -> U
         }
     }
 }
-
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -279,9 +286,9 @@ private fun InputField(
     label: String,
     isNumber: Boolean = false,
     onValueChange: (FormEvent) -> Unit,
-    error : String ?
+    error: String?
 ) {
-    Column{
+    Column {
         Text(
             label,
             style = MaterialTheme.typography.labelMedium,
@@ -291,8 +298,8 @@ private fun InputField(
         OutlinedTextField(
             value = value,
             textStyle = MaterialTheme.typography.bodyMedium,
-            onValueChange ={
-                if(isNumber)
+            onValueChange = {
+                if (isNumber)
                     onValueChange(FormEvent.AmountChanged(it))
                 else onValueChange(FormEvent.TitleChanged(it))
             },
@@ -315,7 +322,7 @@ private fun InputField(
             },
             shape = RoundedCornerShape(12.dp)
         )
-        if(error !=null){
+        if (error != null) {
             Text(
                 text = error,
                 color = MaterialTheme.colorScheme.error

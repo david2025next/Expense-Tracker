@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import java.text.NumberFormat
@@ -47,7 +48,7 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(viewModel: DashboardViewModel = viewModel()) {
+fun DashboardScreen(viewModel: DashboardViewModel = hiltViewModel(), goToForm : ()-> Unit = {}) {
 
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val totalsExpensesPeriod  = state.totals
@@ -71,7 +72,7 @@ fun DashboardScreen(viewModel: DashboardViewModel = viewModel()) {
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = {},
+                onClick = goToForm,
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = Color.White
             ) {
