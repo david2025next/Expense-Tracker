@@ -91,6 +91,13 @@ fun AddExpenseScreen(modifier: Modifier = Modifier, viewModel: AddExpenseViewMod
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
+            InputField(
+                value = state.description,
+                label = "Title",
+                icon = Icons.AutoMirrored.Filled.Notes,
+                error = null,
+                onValueChange = viewModel::uiEvent
+            )
 
             InputField(
                 value = state.amount,
@@ -109,14 +116,6 @@ fun AddExpenseScreen(modifier: Modifier = Modifier, viewModel: AddExpenseViewMod
             DateTransaction(
                 selectedDate = state.date,
                 onDateSelected = viewModel::uiEvent
-            )
-
-            InputField(
-                value = state.description,
-                label = "Description",
-                icon = Icons.AutoMirrored.Filled.Notes,
-                error = null,
-                onValueChange = viewModel::uiEvent
             )
 
             Button(
@@ -152,7 +151,7 @@ private fun DateTransaction(selectedDate: Long, onDateSelected: (FormEvent) -> U
         OutlinedTextField(
             value = convertMillisToDate(selectedDate),
             onValueChange = {},
-            textStyle = MaterialTheme.typography.headlineSmall,
+            textStyle = MaterialTheme.typography.bodyMedium,
             shape = RoundedCornerShape(16.dp),
             readOnly = true,
             trailingIcon = {
@@ -211,7 +210,7 @@ private fun CategoryMenu(categorySelected: String, onCategorySelected: (FormEven
             Text("Category", modifier = Modifier.padding(bottom = 5.dp))
             OutlinedTextField(
                 value = categorySelected,
-                textStyle = MaterialTheme.typography.headlineSmall,
+                textStyle = MaterialTheme.typography.bodyMedium,
                 onValueChange = {},
                 readOnly = true,
                 shape = RoundedCornerShape(12.dp),
@@ -265,14 +264,14 @@ private fun InputField(
 ) {
     Column{
         Text(
-            "$label ${if (isNumber) "" else " (optional)"}",
+            label,
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 5.dp)
         )
         OutlinedTextField(
             value = value,
-            textStyle = MaterialTheme.typography.headlineSmall,
+            textStyle = MaterialTheme.typography.bodyMedium,
             onValueChange ={
                 if(isNumber)
                     onValueChange(FormEvent.AmountChanged(it))
@@ -285,8 +284,8 @@ private fun InputField(
                     tint = MaterialTheme.colorScheme.primary
                 )
             },
-            maxLines = 3,
-            singleLine = isNumber,
+
+            singleLine = true,
             keyboardOptions = KeyboardOptions(
                 keyboardType = if (isNumber) KeyboardType.Decimal else KeyboardType.Text
             ),

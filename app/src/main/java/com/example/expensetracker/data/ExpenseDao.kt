@@ -10,8 +10,8 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ExpenseDao {
 
-    @Insert
-    fun insert()
+//    @Insert
+//    fun insert()
 
     @Query("""
         SELECT * FROM Expenses
