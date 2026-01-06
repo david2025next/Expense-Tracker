@@ -1,5 +1,6 @@
 package com.example.expensetracker.presentation.form
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.expensetracker.domain.model.Expense
@@ -8,6 +9,7 @@ import com.example.expensetracker.domain.service.AddExpenseUseCase
 import com.example.expensetracker.domain.service.ValidationAmount
 import com.example.expensetracker.domain.service.ValidationTitle
 import com.example.expensetracker.utils.categoriesMenu
+import com.example.expensetracker.utils.getInitialDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,11 +35,6 @@ class AddExpenseViewModel @Inject constructor(
 
     private val _eventUiChannel = Channel<UiEvent>()
     val eventUiChannel = _eventUiChannel.receiveAsFlow()
-        .stateIn(
-            viewModelScope,
-            initialValue = UiEvent.Idle,
-            started = SharingStarted.WhileSubscribed(5000L)
-        )
 
     fun navigateEvent() {
         _state.update { FormState() }
@@ -80,8 +77,7 @@ class AddExpenseViewModel @Inject constructor(
         ).any { !it.successful }
 
         if (hasError) {
-            _state.update { it.copy(errorTitle = resultTitle.errorMessage) }
-            _state.update { it.copy(amountError = resultAmount.errorMessage) }
+            _state.update { it.copy(errorTitle = resultTitle.errorMessage, amountError = resultAmount.errorMessage) }
             return
         }
 
@@ -101,7 +97,6 @@ class AddExpenseViewModel @Inject constructor(
 }
 
 sealed class UiEvent {
-    data object Idle : UiEvent()
     data class ShowSnackBar(val message: String) : UiEvent()
     data object NavigateToHome : UiEvent()
 }
@@ -115,8 +110,6 @@ data class FormState(
     val date: Long = getInitialDate()
 )
 
-fun getInitialDate(): Long =
-    LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
 
 sealed class FormEvent {

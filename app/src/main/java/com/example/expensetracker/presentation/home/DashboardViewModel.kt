@@ -1,5 +1,6 @@
 package com.example.expensetracker.presentation.home
 
+import android.util.Log
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -31,6 +32,11 @@ class DashboardViewModel @Inject constructor(
         initialValue = DashboardUiState(),
         started = SharingStarted.WhileSubscribed(5000L)
     )
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("TAG", "dashboardViewModel destroy")
+    }
 }
 
 

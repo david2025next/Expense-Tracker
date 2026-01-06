@@ -67,20 +67,19 @@ import com.example.expensetracker.utils.convertMillisToDate
 fun AddExpenseScreen(viewModel: AddExpenseViewModel = hiltViewModel(), backToHome: () -> Unit = {}) {
 
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val uiEvent by viewModel.eventUiChannel.collectAsStateWithLifecycle()
     val snackBar = remember { SnackbarHostState() }
 
-    LaunchedEffect(key1 = uiEvent) {
-        when (uiEvent) {
-            UiEvent.Idle -> {}
-            UiEvent.NavigateToHome -> {
-                backToHome()
-            }
-
-            is UiEvent.ShowSnackBar -> {
-                snackBar.showSnackbar(
-                    message = (uiEvent as UiEvent.ShowSnackBar).message
-                )
+    LaunchedEffect(key1 = Unit) {
+        viewModel.eventUiChannel.collect { event ->
+            when(event) {
+                UiEvent.NavigateToHome ->{
+                    backToHome()
+                }
+                is UiEvent.ShowSnackBar ->{
+                    snackBar.showSnackbar(
+                        message = event.message
+                    )
+                }
             }
         }
     }
