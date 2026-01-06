@@ -7,6 +7,7 @@ import com.example.expensetracker.domain.service.AddExpenseUseCase
 import com.example.expensetracker.domain.service.ValidationAmount
 import com.example.expensetracker.domain.service.ValidationTitle
 import com.example.expensetracker.utils.categoriesMenu
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,10 +18,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.ZoneId
+import javax.inject.Inject
 
-class AddExpenseViewModel(
-    private val validationAmount: ValidationAmount = ValidationAmount(),
-    private val validationTitle: ValidationTitle = ValidationTitle(),
+@HiltViewModel
+class AddExpenseViewModel @Inject constructor(
+    private val validationAmount: ValidationAmount,
+    private val validationTitle: ValidationTitle,
     private val addExpenseUseCase: AddExpenseUseCase
 ) : ViewModel() {
 

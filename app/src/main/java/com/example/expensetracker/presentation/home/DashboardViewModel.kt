@@ -6,11 +6,14 @@ import androidx.lifecycle.viewModelScope
 import com.example.expensetracker.domain.service.GetExpensePeriodTotals
 import com.example.expensetracker.domain.service.GetRecentExpenses
 import com.example.expensetracker.utils.toUi
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import javax.inject.Inject
 
-class DashboardViewModel(
+@HiltViewModel
+class DashboardViewModel @Inject constructor(
     private val getExpensePeriodTotalsFlow: GetExpensePeriodTotals,
     private val getRecentExpensesFlow: GetRecentExpenses
 ) : ViewModel() {

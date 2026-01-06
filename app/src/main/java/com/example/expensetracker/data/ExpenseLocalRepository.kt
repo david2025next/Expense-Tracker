@@ -8,8 +8,11 @@ import com.example.expensetracker.utils.todayRange
 import com.example.expensetracker.utils.weekRange
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class ExpenseLocalRepository(
+@Singleton
+class ExpenseLocalRepository @Inject constructor(
     private val expenseDao: ExpenseDao
 ) : ExpenseRepository {
 
