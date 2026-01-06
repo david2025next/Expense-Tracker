@@ -1,4 +1,4 @@
-package com.example.expensetracker
+package com.example.expensetracker.presentation.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -29,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,24 +39,29 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import java.text.NumberFormat
 import java.util.Locale
 
 
-/*
-course, transport, alimentation, restaurant, abonnement
- */
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(modifier: Modifier = Modifier) {
-    Scaffold (
+fun DashboardScreen(viewModel: DashboardViewModel = viewModel()) {
+
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Column {
                         Text("Bonjour, Dave", style = MaterialTheme.typography.bodyMedium)
-                        Text("Octobre 2023", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text(
+                            "Octobre 2023",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
@@ -69,7 +76,7 @@ fun DashboardScreen(modifier: Modifier = Modifier) {
                 Icon(Icons.Default.Add, contentDescription = "Ajouter dépense")
             }
         }
-    ){ paddingValues ->
+    ) { paddingValues ->
         Column(
             Modifier
                 .padding(paddingValues)
@@ -78,9 +85,9 @@ fun DashboardScreen(modifier: Modifier = Modifier) {
                 .padding(horizontal = 16.dp)
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-            ExpenseOverviewCard(20000, 5000)
+            ExpenseOverviewCard(state.totalExpenseThisMonth, state.totalExpenseThisWeek)
             Spacer(modifier = Modifier.height(24.dp))
-            DailySpendIndicator(450)
+            DailySpendIndicator(state.totalExpenseToday)
             Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = "Activités récentes",
@@ -93,9 +100,9 @@ fun DashboardScreen(modifier: Modifier = Modifier) {
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(bottom = 80.dp)
             ) {
-//                items(recentExpenses) { expense ->
-//                    TransactionItem(expense)
-//                }
+                items(state.lastFourExpenses) { expense ->
+                    TransactionItem(expense)
+                }
             }
         }
 
@@ -104,17 +111,13 @@ fun DashboardScreen(modifier: Modifier = Modifier) {
 
 @Preview(showBackground = true)
 @Composable
-fun DashboardScreenPreview(){
+fun DashboardScreenPreview() {
     DashboardScreen()
 }
 
 @Composable
 private fun TransactionItem(
-    description : String,
-    iconCategory : ImageVector,
-    category : String,
-    date : String,
-    amount : Long
+    expenseUi: ExpenseUi,
 ) {
     Row(
         modifier = Modifier
@@ -132,7 +135,7 @@ private fun TransactionItem(
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = iconCategory,
+                imageVector = expenseUi.iconCategory,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp)
@@ -143,12 +146,12 @@ private fun TransactionItem(
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = description,
+                text = expenseUi.title,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium
             )
             Text(
-                text = "$category • $date",
+                text = "${expenseUi.category} • ${expenseUi.date}",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )
@@ -156,7 +159,7 @@ private fun TransactionItem(
 
 
         Text(
-            text = formatAmount(amount),
+            text = formatAmount(expenseUi.amount),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface

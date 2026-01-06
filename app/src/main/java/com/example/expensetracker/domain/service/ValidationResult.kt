@@ -1,4 +1,4 @@
-package com.example.expensetracker
+package com.example.expensetracker.domain.service
 
 data class ValidationResult(
     val errorMessage : String ? = null,

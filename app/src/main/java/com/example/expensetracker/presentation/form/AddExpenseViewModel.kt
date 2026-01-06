@@ -1,6 +1,7 @@
-package com.example.expensetracker
+package com.example.expensetracker.presentation.form
 
 import androidx.lifecycle.ViewModel
+import com.example.expensetracker.domain.service.ValidationAmount
 import com.example.expensetracker.utils.categoriesMenu
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
