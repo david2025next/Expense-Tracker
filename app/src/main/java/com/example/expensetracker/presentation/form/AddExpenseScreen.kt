@@ -76,7 +76,7 @@ fun AddExpenseScreen(viewModel: AddExpenseViewModel = hiltViewModel(), backToHom
 
     LaunchedEffect(viewModel.eventUiChannel, lifecycleOwner) {
         viewModel.eventUiChannel
-            .flowWithLifecycle(lifecycleOwner.lifecycle)
+            .flowWithLifecycle(lifecycleOwner.lifecycle, Lifecycle.State.STARTED)
             .collect { event ->
             when(event) {
                 UiEvent.NavigateToHome ->{
@@ -124,7 +124,7 @@ fun AddExpenseScreen(viewModel: AddExpenseViewModel = hiltViewModel(), backToHom
                 label = "Title",
                 icon = Icons.AutoMirrored.Filled.Notes,
                 error = state.errorTitle,
-                onValueChange = viewModel::uiFormEvent
+                onValueChange = {viewModel.uiFormEvent(FormEvent.TitleChanged(it))}
             )
 
             InputField(
@@ -132,7 +132,7 @@ fun AddExpenseScreen(viewModel: AddExpenseViewModel = hiltViewModel(), backToHom
                 isNumber = true,
                 label = "Amount",
                 icon = Icons.Default.AttachMoney,
-                onValueChange = viewModel::uiFormEvent,
+                onValueChange = {viewModel.uiFormEvent(FormEvent.AmountChanged(it))},
                 error = state.amountError
             )
 
@@ -291,7 +291,7 @@ private fun InputField(
     icon: ImageVector,
     label: String,
     isNumber: Boolean = false,
-    onValueChange: (FormEvent) -> Unit,
+    onValueChange: (String) -> Unit,
     error: String?
 ) {
     Column {
@@ -304,11 +304,7 @@ private fun InputField(
         OutlinedTextField(
             value = value,
             textStyle = MaterialTheme.typography.bodyMedium,
-            onValueChange = {
-                if (isNumber)
-                    onValueChange(FormEvent.AmountChanged(it))
-                else onValueChange(FormEvent.TitleChanged(it))
-            },
+            onValueChange = onValueChange,
             leadingIcon = {
                 Icon(
                     imageVector = icon,
