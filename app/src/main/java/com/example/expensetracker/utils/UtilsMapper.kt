@@ -26,6 +26,8 @@ fun Expense.toUi()  = ExpenseUi(
     date = date.toHumanReadableDate()
 )
 
+fun today() = LocalDate.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("d MMMM", Locale.FRENCH))
+
 fun Long.toHumanReadableDate(
     zoneId : ZoneId = ZoneId.systemDefault(),
     locale : Locale = Locale.FRENCH

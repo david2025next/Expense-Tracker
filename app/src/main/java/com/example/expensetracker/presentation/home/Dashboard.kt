@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.expensetracker.utils.today
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -61,7 +62,7 @@ fun DashboardScreen(viewModel: DashboardViewModel = hiltViewModel(), goToForm : 
                     Column {
                         Text("Bonjour, Dave", style = MaterialTheme.typography.bodyMedium)
                         Text(
-                            "Octobre 2023",
+                            text = today(),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
