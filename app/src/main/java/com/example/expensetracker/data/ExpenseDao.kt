@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
 interface ExpenseDao {
 
     @Insert(onConflict = REPLACE)
-    fun insert(expenseEntity: ExpenseEntity)
+    suspend fun insert(expenseEntity: ExpenseEntity)
 
     @Query("""
         SELECT * FROM Expenses
