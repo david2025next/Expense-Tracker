@@ -33,11 +33,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,18 +56,35 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.expensetracker.utils.categoriesMenu
+import com.example.expensetracker.domain.model.categories
 import com.example.expensetracker.utils.convertMillisToDate
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
-fun AddExpenseScreen(modifier: Modifier = Modifier, viewModel: AddExpenseViewModel = viewModel()) {
+fun AddExpenseScreen(viewModel: AddExpenseViewModel = viewModel(), backToHome : ()-> Unit = {}) {
 
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val uiEvent by viewModel.eventUiChannel.collectAsStateWithLifecycle()
+    val snackBar = remember { SnackbarHostState() }
+
+    LaunchedEffect(key1 = uiEvent) {
+        when(uiEvent){
+            UiEvent.Idle -> {}
+            UiEvent.NavigateToHome -> {
+                backToHome()
+            }
+            is UiEvent.ShowSnackBar -> {
+                snackBar.showSnackbar(
+                    message = (uiEvent as UiEvent.ShowSnackBar).message
+                )
+            }
+        }
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackBar) },
         topBar = {
             TopAppBar(
                 title = {
@@ -74,7 +94,7 @@ fun AddExpenseScreen(modifier: Modifier = Modifier, viewModel: AddExpenseViewMod
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = {viewModel.navigateEvent()}) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             null
@@ -96,7 +116,7 @@ fun AddExpenseScreen(modifier: Modifier = Modifier, viewModel: AddExpenseViewMod
                 label = "Title",
                 icon = Icons.AutoMirrored.Filled.Notes,
                 error = state.errorTitle,
-                onValueChange = viewModel::uiEvent
+                onValueChange = viewModel::uiFormEvent
             )
 
             InputField(
@@ -104,22 +124,22 @@ fun AddExpenseScreen(modifier: Modifier = Modifier, viewModel: AddExpenseViewMod
                 isNumber = true,
                 label = "Amount",
                 icon = Icons.Default.AttachMoney,
-                onValueChange = viewModel::uiEvent,
+                onValueChange = viewModel::uiFormEvent,
                 error = state.amountError
             )
 
             CategoryMenu(
                 categorySelected = state.category,
-                onCategorySelected = viewModel::uiEvent
+                onCategorySelected = viewModel::uiFormEvent
             )
 
             DateTransaction(
                 selectedDate = state.date,
-                onDateSelected = viewModel::uiEvent
+                onDateSelected = viewModel::uiFormEvent
             )
 
             Button(
-                onClick = {viewModel.uiEvent(FormEvent.Submit)},
+                onClick = {viewModel.uiFormEvent(FormEvent.Submit)},
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black
                 ),
@@ -225,7 +245,7 @@ private fun CategoryMenu(categorySelected: String, onCategorySelected: (FormEven
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            categoriesMenu.forEach { category ->
+            categories.forEach { category ->
                 DropdownMenuItem(
                     text = {
                         Row(
@@ -235,7 +255,6 @@ private fun CategoryMenu(categorySelected: String, onCategorySelected: (FormEven
                             Icon(
                                 imageVector = category.icon,
                                 contentDescription = category.name,
-                                tint = category.color
                             )
                             Spacer(Modifier.width(10.dp))
                             Text(
