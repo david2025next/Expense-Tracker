@@ -10,19 +10,19 @@ import java.util.Date
 import java.util.Locale
 
 
-data class Category(
+data class CategoryMenu(
     val name: String,
     val icon: ImageVector,
     val color: Color
 )
 
 val categoriesMenu = listOf(
-    Category(
+    CategoryMenu(
         "Transport",
         Icons.Default.DirectionsCar,
         Color.Yellow
     ),
-    Category(
+    CategoryMenu(
         "Alimentation",
         Icons.Default.Restaurant,
         Color.Blue
