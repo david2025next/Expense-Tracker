@@ -55,7 +55,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.expensetracker.domain.model.categories
 import com.example.expensetracker.utils.convertMillisToDate
@@ -68,9 +72,12 @@ fun AddExpenseScreen(viewModel: AddExpenseViewModel = hiltViewModel(), backToHom
 
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackBar = remember { SnackbarHostState() }
+    val lifecycleOwner = LocalLifecycleOwner.current
 
-    LaunchedEffect(key1 = Unit) {
-        viewModel.eventUiChannel.collect { event ->
+    LaunchedEffect(viewModel.eventUiChannel, lifecycleOwner) {
+        viewModel.eventUiChannel
+            .flowWithLifecycle(lifecycleOwner.lifecycle)
+            .collect { event ->
             when(event) {
                 UiEvent.NavigateToHome ->{
                     backToHome()
