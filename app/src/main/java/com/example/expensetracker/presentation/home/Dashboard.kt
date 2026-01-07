@@ -21,6 +21,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -49,18 +51,23 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(viewModel: DashboardViewModel = hiltViewModel(), goToForm : ()-> Unit = {}) {
+fun DashboardScreen(viewModel: DashboardViewModel = hiltViewModel(), goToForm: () -> Unit = {}) {
 
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val totalsExpensesPeriod  = state.totals
+    val totalsExpensesPeriod = state.totals
     val recentExpenses = state.recent
 
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = {
-                    Column {
-                        Text("Bonjour, Dave", style = MaterialTheme.typography.bodyMedium)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "Bonjour, Dave",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                         Text(
                             text = today(),
                             style = MaterialTheme.typography.titleMedium,
@@ -68,50 +75,67 @@ fun DashboardScreen(viewModel: DashboardViewModel = hiltViewModel(), goToForm : 
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer
+                ),
+                scrollBehavior = scrollBehavior
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = goToForm,
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = Color.White
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Ajouter dépense")
             }
         }
     ) { paddingValues ->
-        Column(
-            Modifier
+
+        LazyColumn(
+            modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(horizontal = 16.dp)
+                .background(MaterialTheme.colorScheme.background),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-            ExpenseOverviewCard(totalsExpensesPeriod.thisMonth, totalsExpensesPeriod.thisWeek)
-            Spacer(modifier = Modifier.height(24.dp))
-            DailySpendIndicator(totalsExpensesPeriod.today)
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(
-                text = "Activités récentes",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(bottom = 80.dp)
-            ) {
-                items(recentExpenses.expenses) { expense ->
-                    TransactionItem(expense)
-                }
+
+            item {
+                ExpenseOverviewCard(
+                    totalExpenseThisMonth = totalsExpensesPeriod.thisMonth,
+                    totalExpenseThisWeek = totalsExpensesPeriod.thisWeek
+                )
+            }
+
+            item {
+                DailySpendIndicator(totalsExpensesPeriod.today)
+            }
+
+
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Activités récentes",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
+
+            items(recentExpenses.expenses) { expense ->
+                TransactionItem(expense)
+            }
+            item {
+                Spacer(modifier = Modifier.height(60.dp))
             }
         }
-
     }
+
 }
+
 
 @Preview(showBackground = true)
 @Composable
@@ -120,28 +144,30 @@ fun DashboardScreenPreview() {
 }
 
 @Composable
-private fun TransactionItem(
-    expenseUi: ExpenseUi,
-) {
+private fun TransactionItem(expenseUi: ExpenseUi) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White, RoundedCornerShape(16.dp))
-            .padding(12.dp),
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(
+                vertical = 8.dp,
+                horizontal = 4.dp
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
 
         Box(
             modifier = Modifier
-                .size(48.dp)
+                .size(50.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
+                .background(MaterialTheme.colorScheme.secondaryContainer),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = expenseUi.iconCategory,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = MaterialTheme.colorScheme.onSecondaryContainer,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -152,24 +178,26 @@ private fun TransactionItem(
             Text(
                 text = expenseUi.title,
                 style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
             )
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = "${expenseUi.category} • ${expenseUi.date}",
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
-
         Text(
             text = formatAmount(expenseUi.amount),
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.bodyLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
         )
     }
 }
+
 
 @Composable
 private fun DailySpendIndicator(spentToday: Long) {
@@ -177,24 +205,28 @@ private fun DailySpendIndicator(spentToday: Long) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp))
-            .padding(12.dp),
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(
-            text = "Depense Aujourdhui",
-            color = Color.Gray,
-            style = MaterialTheme.typography.labelMedium
-        )
+        Column {
+            Text(
+                text = "Aujourd'hui",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
         Text(
             text = formatAmount(spentToday),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
         )
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
@@ -205,65 +237,57 @@ private fun DailySpendIndicatorPreview() {
 @Composable
 private fun ExpenseOverviewCard(totalExpenseThisMonth: Long, totalExpenseThisWeek: Long) {
 
-    Card(
+    ElevatedCard(
         shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        ),
         modifier = Modifier.fillMaxWidth()
     ) {
-
         Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier.padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = "Total des depenses",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
 
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                ExpenseAmountRow(
-                    label = "Cette semaine : ",
-                    amount = totalExpenseThisWeek
+            Column {
+                Text(
+                    text = "Dépenses du mois",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                 )
-                ExpenseAmountRow(
-                    label = "Ce mois : ",
-                    amount = totalExpenseThisMonth,
-                    alignEnd = true
+                Text(
+                    text = formatAmount(totalExpenseThisMonth),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        MaterialTheme.colorScheme.background.copy(alpha = 0.1f),
+                        RoundedCornerShape(12.dp)
+                    )
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Cette semaine",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = formatAmount(totalExpenseThisWeek),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun ExpenseAmountRow(
-    label: String,
-    amount: Long,
-    alignEnd: Boolean = false
-) {
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Text(
-            text = formatAmount(amount),
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
     }
 }
 
