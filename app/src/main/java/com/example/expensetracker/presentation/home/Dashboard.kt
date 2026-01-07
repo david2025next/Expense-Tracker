@@ -13,18 +13,24 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -35,17 +41,23 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.stylusHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.expensetracker.utils.TimeRange
 import com.example.expensetracker.utils.today
 import java.text.NumberFormat
 import java.util.Locale
@@ -58,6 +70,7 @@ fun DashboardScreen(viewModel: DashboardViewModel = hiltViewModel(), goToForm: (
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val totalsExpensesPeriod = state.totals
     val recentExpenses = state.recent
+    val selectedRange by viewModel.selectedTimeRange
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
@@ -126,25 +139,16 @@ fun DashboardScreen(viewModel: DashboardViewModel = hiltViewModel(), goToForm: (
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Activités récentes",
+                        text = "Activités ( ${selectedRange.displayName} )",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onBackground
                     )
+                    TimeRangeFilter(
+                        selectedRange = selectedRange
+                    ) { viewModel.onFilterChanged(it) }
 
 
-                    TextButton(
-                        onClick = {},
-                        contentPadding = PaddingValues(horizontal = 8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Tune,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = "Filtrer")
-                    }
                 }
             }
 
@@ -157,6 +161,68 @@ fun DashboardScreen(viewModel: DashboardViewModel = hiltViewModel(), goToForm: (
         }
     }
 
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TimeRangeFilter(
+    selectedRange: TimeRange,
+    onRangeSelected: (TimeRange) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it }
+    ) {
+
+        TextButton(
+            onClick = {},
+            modifier = Modifier.menuAnchor(),
+            contentPadding = PaddingValues(horizontal = 12.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Tune,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = "Filtrer",
+                style = MaterialTheme.typography.labelLarge
+            )
+        }
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.widthIn(180.dp)
+        ) {
+            TimeRange.entries.forEach { range ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = range.displayName,
+                            maxLines = 1,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    },
+                    trailingIcon = {
+                        if (range == selectedRange) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = null
+                            )
+                        }
+                    },
+                    onClick = {
+                        onRangeSelected(range)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
 }
 
 

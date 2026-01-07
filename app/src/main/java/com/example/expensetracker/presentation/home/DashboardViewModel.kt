@@ -1,11 +1,13 @@
 package com.example.expensetracker.presentation.home
 
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.expensetracker.domain.service.GetExpensePeriodTotals
 import com.example.expensetracker.domain.service.GetRecentExpenses
+import com.example.expensetracker.utils.TimeRange
 import com.example.expensetracker.utils.toUi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -15,9 +17,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
-    private val getExpensePeriodTotalsFlow: GetExpensePeriodTotals,
-    private val getRecentExpensesFlow: GetRecentExpenses
+    getExpensePeriodTotalsFlow: GetExpensePeriodTotals,
+    getRecentExpensesFlow: GetRecentExpenses
 ) : ViewModel() {
+
+    var selectedTimeRange = mutableStateOf(TimeRange.RECENT)
+        private set
 
     val uiState = getExpensePeriodTotalsFlow().combine(
         getRecentExpensesFlow()
@@ -32,6 +37,10 @@ class DashboardViewModel @Inject constructor(
         initialValue = DashboardUiState(),
         started = SharingStarted.WhileSubscribed(5000L)
     )
+
+    fun onFilterChanged(timeRange: TimeRange){
+        selectedTimeRange.value = timeRange
+    }
 
     override fun onCleared() {
         super.onCleared()
