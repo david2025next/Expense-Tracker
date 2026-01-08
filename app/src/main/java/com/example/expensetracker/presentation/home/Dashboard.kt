@@ -68,9 +68,7 @@ import java.util.Locale
 fun DashboardScreen(viewModel: DashboardViewModel = hiltViewModel(), goToForm: () -> Unit = {}) {
 
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val totalsExpensesPeriod = state.totals
-    val recentExpenses = state.recent
-    val selectedRange by viewModel.selectedTimeRange
+    val selectedRange by viewModel.selectedTimeRange.collectAsStateWithLifecycle()
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
@@ -120,13 +118,13 @@ fun DashboardScreen(viewModel: DashboardViewModel = hiltViewModel(), goToForm: (
 
             item {
                 ExpenseOverviewCard(
-                    totalExpenseThisMonth = totalsExpensesPeriod.thisMonth,
-                    totalExpenseThisWeek = totalsExpensesPeriod.thisWeek
+                    totalExpenseThisMonth = state.totals.thisMonth,
+                    totalExpenseThisWeek = state.totals.thisWeek
                 )
             }
 
             item {
-                DailySpendIndicator(totalsExpensesPeriod.today)
+                DailySpendIndicator(state.totals.today)
             }
 
 
@@ -152,7 +150,7 @@ fun DashboardScreen(viewModel: DashboardViewModel = hiltViewModel(), goToForm: (
                 }
             }
 
-            items(recentExpenses.expenses) { expense ->
+            items(state.expenses) { expense ->
                 TransactionItem(expense)
             }
             item {

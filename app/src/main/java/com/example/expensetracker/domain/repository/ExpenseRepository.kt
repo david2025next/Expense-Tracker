@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 interface ExpenseRepository {
 
     fun getExpensePeriodTotals() : Flow<ExpensePeriodTotals>
-    fun getRecentExpenses(limit: Int): Flow<List<Expense>>
+    fun getRecentExpenses(limit: Int = 4): Flow<List<Expense>>
     suspend fun addExpense(expense: Expense)
+    fun filter(start : Long, end : Long) : Flow<List<Expense>>
 }

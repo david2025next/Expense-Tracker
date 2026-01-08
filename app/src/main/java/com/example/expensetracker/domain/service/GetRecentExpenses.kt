@@ -8,5 +8,5 @@ import javax.inject.Inject
 class GetRecentExpenses @Inject constructor(
     private val expenseRepository: ExpenseRepository
 ) {
-    operator fun invoke(limit : Int = 4) : Flow<List<Expense>> = expenseRepository.getRecentExpenses(limit)
+    operator fun invoke() : Flow<List<Expense>> = expenseRepository.getRecentExpenses()
 }

@@ -1,53 +1,61 @@
 package com.example.expensetracker.presentation.home
 
-import android.util.Log
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.expensetracker.domain.service.FilterExpensesByTimeRangeUseCase
 import com.example.expensetracker.domain.service.GetExpensePeriodTotals
-import com.example.expensetracker.domain.service.GetRecentExpenses
 import com.example.expensetracker.utils.TimeRange
 import com.example.expensetracker.utils.toUi
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     getExpensePeriodTotalsFlow: GetExpensePeriodTotals,
-    getRecentExpensesFlow: GetRecentExpenses
+    private val filterExpensesByTimeRangeUseCase: FilterExpensesByTimeRangeUseCase
 ) : ViewModel() {
 
-    var selectedTimeRange = mutableStateOf(TimeRange.RECENT)
-        private set
+    private val _selectedTimeRange = MutableStateFlow(TimeRange.RECENT)
+    val selectedTimeRange = _selectedTimeRange.asStateFlow()
 
-    val uiState = getExpensePeriodTotalsFlow().combine(
-        getRecentExpensesFlow()
-    ) { totals, recentExpenses ->
-        val recentExpenses = recentExpenses.map { it.toUi() }
-        DashboardUiState(
-            totals = totals.toUi(),
-            recent = RecentExpenses(recentExpenses)
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val uiState = selectedTimeRange
+        .flatMapLatest { range ->
+            filterExpensesByTimeRangeUseCase(range)
+        }
+        .map { expenses ->
+            expenses.map { it.toUi() }
+        }
+        .combine(getExpensePeriodTotalsFlow()) { expenses, expensePeriodTotals ->
+            DashboardUiState(
+                totals = TotalsExpensePeriod(
+                    today = expensePeriodTotals.today,
+                    thisMonth = expensePeriodTotals.thisMonth,
+                    thisWeek = expensePeriodTotals.thisWeek
+                ),
+                expenses = expenses
+            )
+        }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            DashboardUiState()
         )
-    }.stateIn(
-        viewModelScope,
-        initialValue = DashboardUiState(),
-        started = SharingStarted.WhileSubscribed(5000L)
-    )
 
-    fun onFilterChanged(timeRange: TimeRange){
-        selectedTimeRange.value = timeRange
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        Log.d("TAG", "dashboardViewModel destroy")
+    fun onFilterChanged(timeRange: TimeRange) {
+        _selectedTimeRange.update { timeRange }
     }
 }
-
 
 
 data class ExpenseUi(
@@ -60,15 +68,11 @@ data class ExpenseUi(
 
 data class DashboardUiState(
     val totals: TotalsExpensePeriod = TotalsExpensePeriod(),
-    val recent: RecentExpenses = RecentExpenses()
+    val expenses: List<ExpenseUi> = listOf()
 )
 
 data class TotalsExpensePeriod(
     val today: Long = 0,
     val thisWeek: Long = 0,
     val thisMonth: Long = 0
-)
-
-data class RecentExpenses(
-    val expenses: List<ExpenseUi> = listOf()
 )

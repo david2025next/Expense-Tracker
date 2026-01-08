@@ -35,4 +35,7 @@ interface ExpenseDao {
         monthStart: Long,
         monthEnd: Long
     ): Flow<ExpensePeriodTotalsEntity>
+
+    @Query("SELECT * FROM expenses WHERE date BETWEEN :start AND :end")
+    fun filterExpense(start : Long, end : Long) : Flow<List<ExpenseEntity>>
 }

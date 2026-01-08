@@ -29,9 +29,14 @@ class ExpenseLocalRepository @Inject constructor(
 
     override fun getRecentExpenses(limit: Int): Flow<List<Expense>> =
         expenseDao.getRecentExpenses(limit)
-            .map { expenseEntities -> expenseEntities.map { it.toExpenseDomain() } }
+            .map { expenseEntities -> expenseEntities.map { it.toExpenseDomain() }.sortedByDescending { it.date } }
 
-    override suspend fun addExpense(expense: Expense)  = expenseDao.insert(expense.toEntity())
+    override suspend fun addExpense(expense: Expense) = expenseDao.insert(expense.toEntity())
+    override fun filter(
+        start: Long,
+        end: Long
+    ): Flow<List<Expense>> = expenseDao.filterExpense(start, end)
+        .map { expenseEntities -> expenseEntities.map { it.toExpenseDomain() }.sortedByDescending { it.date } }
 
 }
 
