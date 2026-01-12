@@ -30,19 +30,13 @@ class DashboardViewModel @Inject constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState = selectedTimeRange
-        .flatMapLatest { range ->
-            filterExpensesByTimeRangeUseCase(range)
-        }
-        .map { expenses ->
-            expenses.map { it.toUi() }
-        }
+        .flatMapLatest { range -> filterExpensesByTimeRangeUseCase(range) }
+        .map { expenses -> expenses.map { it.toUi() } }
         .combine(getExpensePeriodTotalsFlow()) { expenses, expensePeriodTotals ->
             DashboardUiState(
-                totals = TotalsExpensePeriod(
-                    today = expensePeriodTotals.today,
-                    thisMonth = expensePeriodTotals.thisMonth,
-                    thisWeek = expensePeriodTotals.thisWeek
-                ),
+                spentToday = expensePeriodTotals.today,
+                spentThisWeek = expensePeriodTotals.thisWeek,
+                spentThisMonth = expensePeriodTotals.thisMonth,
                 expenses = expenses
             )
         }
@@ -58,21 +52,17 @@ class DashboardViewModel @Inject constructor(
 }
 
 
-data class ExpenseUi(
+data class ExpenseItemUiState(
     val title: String,
     val amount: Long,
-    val date: String,
+    val createdAt: String,
     val iconCategory: ImageVector,
     val category: String
 )
 
 data class DashboardUiState(
-    val totals: TotalsExpensePeriod = TotalsExpensePeriod(),
-    val expenses: List<ExpenseUi> = listOf()
-)
-
-data class TotalsExpensePeriod(
-    val today: Long = 0,
-    val thisWeek: Long = 0,
-    val thisMonth: Long = 0
+    val spentToday : Long = 0,
+    val spentThisWeek : Long = 0,
+    val spentThisMonth : Long = 0,
+    val expenses: List<ExpenseItemUiState> = listOf()
 )

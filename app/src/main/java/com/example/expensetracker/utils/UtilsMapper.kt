@@ -3,19 +3,13 @@ package com.example.expensetracker.utils
 import com.example.expensetracker.domain.model.Expense
 import com.example.expensetracker.domain.model.findIconByCategoryName
 import com.example.expensetracker.domain.service.ExpensePeriodTotals
-import com.example.expensetracker.presentation.home.ExpenseUi
-import com.example.expensetracker.presentation.home.TotalsExpensePeriod
+import com.example.expensetracker.presentation.home.ExpenseItemUiState
 
-fun ExpensePeriodTotals.toUi() = TotalsExpensePeriod(
-    today = today,
-    thisWeek = thisWeek,
-    thisMonth = thisMonth
-)
 
-fun Expense.toUi()  = ExpenseUi(
+fun Expense.toUi()  = ExpenseItemUiState(
     title = title,
     amount = amount,
     category = category,
     iconCategory = findIconByCategoryName(category),
-    date = date.toHumanReadableDate()
+    createdAt = date.toHumanReadableDate()
 )

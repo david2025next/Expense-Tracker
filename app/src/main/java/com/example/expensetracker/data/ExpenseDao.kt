@@ -15,16 +15,16 @@ interface ExpenseDao {
 
     @Query("""
         SELECT * FROM Expenses
-        ORDER BY date DESC
+        ORDER BY createdAt DESC
         LIMIT :limit
     """)
     fun getRecentExpenses(limit : Int) : Flow<List<ExpenseEntity>>
 
     @Query("""
     SELECT
-        SUM(CASE WHEN date BETWEEN :todayStart AND :todayEnd THEN amount ELSE 0 END) AS todayTotal,
-        SUM(CASE WHEN date BETWEEN :weekStart AND :weekEnd THEN amount ELSE 0 END) AS weekTotal,
-        SUM(CASE WHEN date BETWEEN :monthStart AND :monthEnd THEN amount ELSE 0 END) AS monthTotal
+        SUM(CASE WHEN createdAt BETWEEN :todayStart AND :todayEnd THEN amount ELSE 0 END) AS todayTotal,
+        SUM(CASE WHEN createdAt BETWEEN :weekStart AND :weekEnd THEN amount ELSE 0 END) AS weekTotal,
+        SUM(CASE WHEN createdAt BETWEEN :monthStart AND :monthEnd THEN amount ELSE 0 END) AS monthTotal
     FROM Expenses
 """)
     fun getExpensePeriodTotals(
@@ -36,6 +36,6 @@ interface ExpenseDao {
         monthEnd: Long
     ): Flow<ExpensePeriodTotalsEntity>
 
-    @Query("SELECT * FROM expenses WHERE date BETWEEN :start AND :end")
+    @Query("SELECT * FROM expenses WHERE createdAt BETWEEN :start AND :end")
     fun filterExpense(start : Long, end : Long) : Flow<List<ExpenseEntity>>
 }

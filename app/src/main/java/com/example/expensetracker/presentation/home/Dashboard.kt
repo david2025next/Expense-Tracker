@@ -22,11 +22,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Tune
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,26 +34,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.stylusHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.expensetracker.utils.TimeRange
 import com.example.expensetracker.utils.today
 import java.text.NumberFormat
@@ -118,13 +109,13 @@ fun DashboardScreen(viewModel: DashboardViewModel = hiltViewModel(), goToForm: (
 
             item {
                 ExpenseOverviewCard(
-                    totalExpenseThisMonth = state.totals.thisMonth,
-                    totalExpenseThisWeek = state.totals.thisWeek
+                    spentThisMonth= state.spentThisMonth,
+                    spentThisWeek = state.spentThisWeek
                 )
             }
 
             item {
-                DailySpendIndicator(state.totals.today)
+                DailySpendIndicator(state.spentToday)
             }
 
 
@@ -231,7 +222,7 @@ fun DashboardScreenPreview() {
 }
 
 @Composable
-private fun TransactionItem(expenseUi: ExpenseUi) {
+private fun TransactionItem(expenseItemUiState: ExpenseItemUiState) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -252,7 +243,7 @@ private fun TransactionItem(expenseUi: ExpenseUi) {
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = expenseUi.iconCategory,
+                imageVector = expenseItemUiState.iconCategory,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSecondaryContainer,
                 modifier = Modifier.size(24.dp)
@@ -263,21 +254,21 @@ private fun TransactionItem(expenseUi: ExpenseUi) {
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = expenseUi.title,
+                text = expenseItemUiState.title,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = "${expenseUi.category} • ${expenseUi.date}",
+                text = "${expenseItemUiState.category} • ${expenseItemUiState.createdAt}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
         Text(
-            text = formatAmount(expenseUi.amount),
+            text = formatAmount(expenseItemUiState.amount),
             style = MaterialTheme.typography.bodyLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
@@ -322,7 +313,7 @@ private fun DailySpendIndicatorPreview() {
 }
 
 @Composable
-private fun ExpenseOverviewCard(totalExpenseThisMonth: Long, totalExpenseThisWeek: Long) {
+private fun ExpenseOverviewCard(spentThisMonth: Long, spentThisWeek: Long) {
 
     ElevatedCard(
         shape = RoundedCornerShape(24.dp),
@@ -344,7 +335,7 @@ private fun ExpenseOverviewCard(totalExpenseThisMonth: Long, totalExpenseThisWee
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                 )
                 Text(
-                    text = formatAmount(totalExpenseThisMonth),
+                    text = formatAmount(spentThisMonth),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -369,7 +360,7 @@ private fun ExpenseOverviewCard(totalExpenseThisMonth: Long, totalExpenseThisWee
                     fontWeight = FontWeight.Medium
                 )
                 Text(
-                    text = formatAmount(totalExpenseThisWeek),
+                    text = formatAmount(spentThisWeek),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -381,13 +372,4 @@ private fun ExpenseOverviewCard(totalExpenseThisMonth: Long, totalExpenseThisWee
 fun formatAmount(amount: Long): String {
     val formatter = NumberFormat.getNumberInstance(Locale.FRANCE)
     return "${formatter.format(amount)} FCFA"
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun ExpenseOverviewCardPreview() {
-    ExpenseOverviewCard(
-        totalExpenseThisWeek = 2000,
-        totalExpenseThisMonth = 50000
-    )
 }

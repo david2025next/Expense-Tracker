@@ -44,14 +44,14 @@ class ExpenseLocalRepository @Inject constructor(
 fun Expense.toEntity() = ExpenseEntity(
     title = title,
     amount = amount,
-    date = date,
+    createdAt = date,
     category = category
 )
 
 private fun ExpenseEntity.toExpenseDomain() = Expense(
     title = title,
     amount = amount,
-    date = date,
+    date = createdAt,
     category = category,
 )
 

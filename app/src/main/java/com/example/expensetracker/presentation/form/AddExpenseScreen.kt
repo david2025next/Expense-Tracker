@@ -184,7 +184,7 @@ private fun DateTransaction(selectedDate: Long, onDateSelected: (FormEvent) -> U
             shape = RoundedCornerShape(16.dp),
             readOnly = true,
             trailingIcon = {
-                Icon(Icons.Default.DateRange, contentDescription = "Select date")
+                Icon(Icons.Default.DateRange, contentDescription = "Select createdAt")
             },
             modifier = Modifier
                 .fillMaxWidth()
