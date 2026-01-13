@@ -4,12 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.CalendarToday
 import androidx.compose.material.icons.rounded.Fastfood
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Receipt
@@ -25,17 +26,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.expensetracker.ui.theme.LightCyan
 import com.example.expensetracker.ui.theme.PrimaryCyan
 import com.example.expensetracker.ui.theme.TextDark
 import com.example.expensetracker.ui.theme.TextGray
+import com.example.expensetracker.utils.toPercentageString
 
-
-val BarChartUnselected = Color(0xFFB2EBF2)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SpendingAnalysisScreen() {
+fun SpendingAnalysisScreen(analysisViewModel: AnalysisViewModel = hiltViewModel(), backToHome : () -> Unit) {
+
+    val state by analysisViewModel.state.collectAsStateWithLifecycle()
+
     Scaffold(
         containerColor = Color(0xFFF5F5F5),
         topBar = {
@@ -52,11 +57,14 @@ fun SpendingAnalysisScreen() {
                     containerColor = Color(0xFFF5F5F5)
                 ),
                 navigationIcon = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                        contentDescription = "Back",
-                        tint = TextGray
-                    )
+                    IconButton(
+                        onClick = backToHome
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = "Back",
+                        )
+                    }
                 }
             )
         },
@@ -87,27 +95,15 @@ fun SpendingAnalysisScreen() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            CategoryItem(
-                name = "Food",
-                percentage = "35% of total",
-                icon = Icons.Rounded.Fastfood,
-                progress = 0.35f,
-                color = PrimaryCyan
-            )
-            CategoryItem(
-                name = "Rent",
-                percentage = "15% of total",
-                icon = Icons.Rounded.Home,
-                progress = 0.15f,
-                color = PrimaryCyan
-            )
-            CategoryItem(
-                name = "Utility Bills",
-                percentage = "30% of total",
-                icon = Icons.Rounded.Receipt,
-                progress = 0.30f,
-                color = PrimaryCyan
-            )
+            state.topCategories.forEach { categoryUiState ->
+                CategoryItem(
+                    name = categoryUiState.name,
+                    icon = categoryUiState.icon,
+                    progress = categoryUiState.percent,
+                    color = PrimaryCyan,
+                    percentage = categoryUiState.percent.toPercentageString()
+                )
+            }
         }
     }
 }
@@ -204,6 +200,7 @@ fun CategoryItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(bottom = 8.dp)
             .border(1.dp, Color(0xFFEEEEEE), RoundedCornerShape(12.dp))
             .padding(12.dp)
             .height(60.dp),
@@ -261,5 +258,5 @@ fun CategoryItem(
 @Preview(showBackground = true)
 @Composable
 fun PreviewScreen() {
-    SpendingAnalysisScreen()
+    SpendingAnalysisScreen{}
 }

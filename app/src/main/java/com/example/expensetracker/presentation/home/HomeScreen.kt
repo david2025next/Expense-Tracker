@@ -22,6 +22,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.StackedBarChart
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.StackedBarChart
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenuItem
@@ -31,18 +35,22 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -56,7 +64,7 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(viewModel: DashboardViewModel = hiltViewModel(), goToForm: () -> Unit = {}) {
+fun HomeScreen(viewModel: DashboardViewModel = hiltViewModel(), goToForm: () -> Unit = {}, goToStatistics : ()-> Unit = {}) {
 
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val selectedRange by viewModel.selectedTimeRange.collectAsStateWithLifecycle()
@@ -85,6 +93,43 @@ fun DashboardScreen(viewModel: DashboardViewModel = hiltViewModel(), goToForm: (
                 ),
                 scrollBehavior = scrollBehavior
             )
+        },
+        bottomBar = {
+            NavigationBar (
+                containerColor = MaterialTheme.colorScheme.background
+            ){
+
+                NavigationBarItem(
+                    selected = true,
+                    icon ={
+                        Icon(
+                            imageVector = Icons.Rounded.Home,
+                            contentDescription = "Home"
+                        )
+                    } ,
+                    label = {
+                        Text(
+                            text = "Home"
+                        )
+                    },
+                    onClick = {}
+                )
+                NavigationBarItem(
+                    selected = false,
+                    icon ={
+                        Icon(
+                            imageVector = Icons.Outlined.StackedBarChart,
+                            contentDescription = "Statistics"
+                        )
+                    } ,
+                    label = {
+                        Text(
+                            text = "Statistics"
+                        )
+                    },
+                    onClick = goToStatistics
+                )
+            }
         },
         floatingActionButton = {
             FloatingActionButton(
@@ -218,7 +263,7 @@ fun TimeRangeFilter(
 @Preview(showBackground = true)
 @Composable
 fun DashboardScreenPreview() {
-    DashboardScreen()
+    HomeScreen()
 }
 
 @Composable
