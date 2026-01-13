@@ -5,6 +5,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalAdjusters
 import java.util.Locale
 
 fun getInitialDate(): Long =
@@ -55,6 +56,26 @@ fun weekRange(zoneId: ZoneId = ZoneId.systemDefault()): DateRange {
         start.plusDays(7).atStartOfDay(zoneId).toInstant().toEpochMilli() - 1
     )
 }
+
+fun yearRange(zoneId: ZoneId = ZoneId.systemDefault()): DateRange {
+    val today = LocalDate.now(zoneId)
+
+    val startOfYear = today.with(TemporalAdjusters.firstDayOfYear())
+    val startOfNextYear = startOfYear.plusYears(1)
+
+    return DateRange(
+        startOfYear
+            .atStartOfDay(zoneId)
+            .toInstant()
+            .toEpochMilli(),
+
+        startOfNextYear
+            .atStartOfDay(zoneId)
+            .toInstant()
+            .toEpochMilli() - 1
+    )
+}
+
 
 fun monthRange(zoneId: ZoneId = ZoneId.systemDefault()): DateRange {
     val today = LocalDate.now(zoneId)

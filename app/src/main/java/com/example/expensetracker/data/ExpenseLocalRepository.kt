@@ -32,7 +32,8 @@ class ExpenseLocalRepository @Inject constructor(
             .map { expenseEntities -> expenseEntities.map { it.toExpenseDomain() }.sortedByDescending { it.date } }
 
     override suspend fun addExpense(expense: Expense) = expenseDao.insert(expense.toEntity())
-    override fun filter(
+
+    override fun getExpenseBetween(
         start: Long,
         end: Long
     ): Flow<List<Expense>> = expenseDao.filterExpense(start, end)

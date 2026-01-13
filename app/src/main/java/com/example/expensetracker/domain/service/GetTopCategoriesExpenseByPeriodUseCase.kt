@@ -1,7 +1,7 @@
 package com.example.expensetracker.domain.service
 
 import android.util.Log
-import com.example.expensetracker.presentation.statistics.FilterPeriod
+import com.example.expensetracker.presentation.statistics.StatisticPeriod
 import com.example.expensetracker.utils.TimeRange
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -12,10 +12,10 @@ class GetTopCategoriesExpenseByPeriodUseCase @Inject constructor(
 ) {
 
     operator fun invoke(
-        filterPeriod: FilterPeriod,
+        statisticPeriod: StatisticPeriod,
         count: Int = 3
     ): Flow<List<CategoryPercentage>> {
-        return filterExpensesByTimeRangeUseCase(TimeRange.valueOf(filterPeriod.name))
+        return filterExpensesByTimeRangeUseCase(TimeRange.valueOf(statisticPeriod.name))
             .map { expenses ->
                 val totalAmount = expenses.sumOf { it.amount }
                 Log.d("TAG", "getCategoriesUseCase: $totalAmount ")

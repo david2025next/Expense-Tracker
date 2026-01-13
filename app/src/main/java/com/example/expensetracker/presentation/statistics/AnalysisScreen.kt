@@ -4,16 +4,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Fastfood
-import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.Receipt
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -37,7 +32,10 @@ import com.example.expensetracker.utils.toPercentageString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SpendingAnalysisScreen(analysisViewModel: AnalysisViewModel = hiltViewModel(), backToHome : () -> Unit) {
+fun SpendingAnalysisScreen(
+    analysisViewModel: AnalysisViewModel = hiltViewModel(),
+    backToHome: () -> Unit
+) {
 
     val state by analysisViewModel.state.collectAsStateWithLifecycle()
 
@@ -78,11 +76,14 @@ fun SpendingAnalysisScreen(analysisViewModel: AnalysisViewModel = hiltViewModel(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            TimeFilterSelector()
+            TimeFilterSelector(
+                onSelectedChange = analysisViewModel::onSelectedPeriodChanged
+            )
+
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            WeeklyBarChart()
+            WeeklyBarChart(state.dataCharts)
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -110,9 +111,9 @@ fun SpendingAnalysisScreen(analysisViewModel: AnalysisViewModel = hiltViewModel(
 
 
 @Composable
-fun TimeFilterSelector() {
+fun TimeFilterSelector(onSelectedChange: (StatisticPeriod) -> Unit) {
     var selectedIndex by remember { mutableIntStateOf(0) }
-    val options = listOf("Week", "Month", "Year")
+
 
     Row(
         modifier = Modifier
@@ -124,7 +125,7 @@ fun TimeFilterSelector() {
             .padding(4.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        options.forEachIndexed { index, text ->
+        StatisticPeriod.entries.forEachIndexed { index, text ->
             val isSelected = index == selectedIndex
             Box(
                 modifier = Modifier
@@ -132,11 +133,14 @@ fun TimeFilterSelector() {
                     .fillMaxHeight()
                     .clip(RoundedCornerShape(20.dp))
                     .background(if (isSelected) PrimaryCyan else Color.Transparent)
-                    .clickable { selectedIndex = index },
+                    .clickable {
+                        selectedIndex = index
+                        onSelectedChange(text)
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = text,
+                    text = text.displayName,
                     color = if (isSelected) Color.White else Color.Black,
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                     fontSize = 14.sp
@@ -147,22 +151,18 @@ fun TimeFilterSelector() {
 }
 
 @Composable
-fun WeeklyBarChart() {
-
-    val data = listOf(0.4f, 0.3f, 0.6f, 0.5f)
-    val days = listOf("Semaine 1", "Semaine 2", "Semaine 3", "Semaine 4")
+fun WeeklyBarChart(dataReports: Map<String, Float>) {
 
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp)
-        ,
+            .height(200.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.Bottom
     ) {
-        data.forEachIndexed { index, value ->
 
+        for ((key, value) in dataReports) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom,
@@ -179,7 +179,7 @@ fun WeeklyBarChart() {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = days[index],
+                    text = key,
                     style = MaterialTheme.typography.labelSmall,
                     color = TextGray,
                     fontSize = 10.sp
@@ -243,7 +243,7 @@ fun CategoryItem(
         }
 
         Box(contentAlignment = Alignment.Center) {
-             CircularProgressIndicator(
+            CircularProgressIndicator(
                 progress = { progress },
                 modifier = Modifier.size(40.dp),
                 color = color,
@@ -258,5 +258,5 @@ fun CategoryItem(
 @Preview(showBackground = true)
 @Composable
 fun PreviewScreen() {
-    SpendingAnalysisScreen{}
+    SpendingAnalysisScreen {}
 }
