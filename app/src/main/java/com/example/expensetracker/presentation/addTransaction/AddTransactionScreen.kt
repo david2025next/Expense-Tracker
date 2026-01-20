@@ -42,6 +42,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
@@ -66,6 +67,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.expensetracker.domain.model.Category
+import com.example.expensetracker.domain.model.TransactionType
 import com.example.expensetracker.utils.toHumanDate
 
 @Composable
@@ -135,9 +138,10 @@ private fun AddTransactionScreen(
                     icon = Icons.AutoMirrored.Filled.Notes,
                     error = state.descriptionError
                 ) { addTransactionViewModel.formEvent(FormEvent.DescriptionChanged(it)) }
+
                 InputField(
                     label = "Amount",
-                    fieldValue = state.amount.toString(),
+                    fieldValue = state.amount,
                     icon = Icons.Default.AttachMoney,
                     error = state.amountError,
                     isNumber = true
@@ -172,7 +176,7 @@ private fun AddTransactionScreen(
 }
 
 @Composable
-private fun TransactionFilterSelector(onTransactionFilterChanged: (TransactionFilterSelector) -> Unit) {
+private fun TransactionFilterSelector(onTransactionFilterChanged: (TransactionType) -> Unit) {
 
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
     val containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
@@ -189,7 +193,7 @@ private fun TransactionFilterSelector(onTransactionFilterChanged: (TransactionFi
             .padding(4.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        TransactionFilterSelector.entries.forEachIndexed { index, transaction ->
+        TransactionType.entries.forEachIndexed { index, transaction ->
             val isSelected = selectedIndex == index
 
             val backgroundColor by animateColorAsState(
@@ -235,46 +239,42 @@ private fun InputField(
     onfieldInputChanged: (String) -> Unit
 ) {
 
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.padding(bottom = 4.dp)
-        )
-        OutlinedTextField(
-            value = fieldValue,
-            onValueChange = onfieldInputChanged,
-            modifier = Modifier.fillMaxWidth(),
-            textStyle = MaterialTheme.typography.bodyLarge,
-            isError = error != null,
-            keyboardOptions = if (isNumber) KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            ) else KeyboardOptions.Default,
-            trailingIcon = {
-                if (icon != null) {
-                    Icon(
-                        imageVector = icon, contentDescription = label
-                    )
-                }
-            },
-            singleLine = true,
-            shape = MaterialTheme.shapes.small,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                errorContainerColor = Color.Transparent,
-            )
-        )
-        if (error != null) {
+    OutlinedTextField(
+        value = fieldValue,
+        onValueChange = onfieldInputChanged,
+        label = {
             Text(
-                text = error,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                text = label,
+                style = MaterialTheme.typography.labelMedium
             )
-        }
+        },
+        modifier = Modifier.fillMaxWidth(),
+        textStyle = MaterialTheme.typography.bodyLarge,
+        isError = error != null,
+        keyboardOptions = if (isNumber) KeyboardOptions(
+            keyboardType = KeyboardType.Number
+        ) else KeyboardOptions.Default,
+        trailingIcon = {
+            if (icon != null) {
+                Icon(
+                    imageVector = icon, contentDescription = label
+                )
+            }
+        },
+        singleLine = true,
+        shape = MaterialTheme.shapes.small,
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent
+        )
+    )
+    if (error != null) {
+        Text(
+            text = error,
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+        )
     }
 }
 
@@ -293,30 +293,28 @@ private fun CategoryField(
         onExpandedChange = { expanded = it }
     ) {
 
-        Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = "Category",
-                style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.padding(bottom = 4.dp)
-            )
-            OutlinedTextField(
-                value = selectedCategory,
-                onValueChange = {},
-                readOnly = true,
-                shape = MaterialTheme.shapes.small,
-                textStyle = MaterialTheme.typography.bodyLarge,
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor()
-            )
-        }
+
+        OutlinedTextField(
+            value = selectedCategory,
+            label = {
+                Text(
+                    text = "Category",
+                    style = MaterialTheme.typography.labelMedium
+                )
+            },
+            onValueChange = {},
+            readOnly = true,
+            shape = MaterialTheme.shapes.small,
+            textStyle = MaterialTheme.typography.bodyLarge,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor()
+        )
 
         ExposedDropdownMenu(
             expanded = expanded,
@@ -351,48 +349,42 @@ private fun DateTransaction(date: Long, onSelectedDate: (Long) -> Unit) {
         initialSelectedDateMillis = date
     )
 
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = "Date",
-            style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.padding(bottom = 4.dp)
-        )
-        OutlinedTextField(
-            value = date.toHumanDate(),
-            onValueChange = {},
-            readOnly = true,
-            textStyle = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier
-                .fillMaxWidth()
-                .pointerInput(date) {
-                    awaitEachGesture {
-                        awaitFirstDown(pass = PointerEventPass.Initial)
-                        val upEvent = waitForUpOrCancellation(pass = PointerEventPass.Initial)
-                        if (upEvent != null) {
-                            showModal = true
-                        }
-                    }
-                },
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Default.DateRange, contentDescription = "Date"
-                )
-            },
-            enabled = false,
-            singleLine = true,
-            shape = MaterialTheme.shapes.small,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                disabledBorderColor = MaterialTheme.colorScheme.outline
+
+    OutlinedTextField(
+        value = date.toHumanDate(),
+        onValueChange = {},
+        label = {
+            Text(
+                text = "Date",
+                style = MaterialTheme.typography.labelMedium
             )
+        },
+        readOnly = true,
+        textStyle = MaterialTheme.typography.bodyLarge,
+        modifier = Modifier
+            .fillMaxWidth()
+            .pointerInput(date) {
+                awaitEachGesture {
+                    awaitFirstDown(pass = PointerEventPass.Initial)
+                    val upEvent = waitForUpOrCancellation(pass = PointerEventPass.Initial)
+                    if (upEvent != null) {
+                        showModal = true
+                    }
+                }
+            },
+        trailingIcon = {
+            Icon(
+                imageVector = Icons.Default.DateRange, contentDescription = "Date"
+            )
+        },
+        singleLine = true,
+        shape = MaterialTheme.shapes.small,
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent
         )
-    }
+    )
+
 
     if (showModal) {
         DatePickerDialog(
@@ -416,12 +408,4 @@ private fun DateTransaction(date: Long, onSelectedDate: (Long) -> Unit) {
             DatePicker(state = datePickerState)
         }
     }
-}
-
-
-
-
-enum class TransactionFilterSelector(val displayName: String) {
-    EXPENSE("Depense"),
-    INCOME("Revenu")
 }

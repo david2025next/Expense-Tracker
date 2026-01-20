@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
 
-            ExpenseTrackerTheme(darkTheme = false) {
+            ExpenseTrackerTheme(darkTheme = true) {
                 AddTransactionRoute()
             }
         }

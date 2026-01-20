@@ -1,12 +1,10 @@
 package com.example.expensetracker.presentation.addTransaction
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Movie
-import androidx.compose.material.icons.filled.Restaurant
-import androidx.compose.material.icons.filled.Wifi
-import androidx.compose.material.icons.filled.Work
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
+import com.example.expensetracker.domain.model.Category
+import com.example.expensetracker.domain.model.TransactionType
+import com.example.expensetracker.domain.model.expenseCategories
+import com.example.expensetracker.domain.model.incomeCategories
 import com.example.expensetracker.domain.service.ValidateAmount
 import com.example.expensetracker.utils.toMillis
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,13 +23,7 @@ class AddTransactionViewModel constructor(
     fun formEvent(event: FormEvent) {
         when (event) {
             is FormEvent.AmountChanged -> {
-//                val result = validateAmount(event.amount)
-//                if(!result.successful){
-//                    _state.update { it.copy(amountError = result.errorMessage,) }
-//                }
-//                else{
-//                    _state.update { it.copy(amount = event.amount.toLong(), amountError = null) }
-//                }
+                _state.update { it.copy(amount = event.amount) }
             }
 
             is FormEvent.CategoryChanged -> {
@@ -47,13 +39,25 @@ class AddTransactionViewModel constructor(
             }
 
             is FormEvent.TransactionFilterChanged -> {
-                when (event.transactionFilterSelector) {
-                    TransactionFilterSelector.EXPENSE -> {
-                        _state.update { it.copy(categoriesForTransaction = expenseCategories, category = expenseCategories.first().name) }
+                when (event.transactionType) {
+                    TransactionType.EXPENSE -> {
+                        _state.update {
+                            it.copy(
+                                categoriesForTransaction = expenseCategories,
+                                category = expenseCategories.first().name,
+                                transactionType = event.transactionType
+                            )
+                        }
                     }
 
-                    TransactionFilterSelector.INCOME -> {
-                        _state.update { it.copy(categoriesForTransaction = incomeCategories, category = incomeCategories.first().name) }
+                    TransactionType.INCOME -> {
+                        _state.update {
+                            it.copy(
+                                categoriesForTransaction = incomeCategories,
+                                category = incomeCategories.first().name,
+                                transactionType = event.transactionType
+                            )
+                        }
                     }
                 }
             }
@@ -66,43 +70,20 @@ sealed class FormEvent {
     data class AmountChanged(val amount: String) : FormEvent()
     data class CategoryChanged(val name: String) : FormEvent()
     data class DateChanged(val date: Long) : FormEvent()
-    data class TransactionFilterChanged(val transactionFilterSelector: TransactionFilterSelector) : FormEvent()
+    data class TransactionFilterChanged(val transactionType: TransactionType) :
+        FormEvent()
 }
 
 
 data class AddTransactionUiState(
     val description: String = "",
     val descriptionError: String? = null,
-    val amount: Long = 50L,
+    val amount: String = "100",
     val amountError: String? = null,
     val category: String = expenseCategories.first().name,
-    val categoriesForTransaction: List<Category> = listOf(),
-    val date: Long = LocalDate.now().toMillis()
+    val categoriesForTransaction: List<Category> = expenseCategories,
+    val date: Long = LocalDate.now().toMillis(),
+    val transactionType: TransactionType = TransactionType.EXPENSE
 )
 
-data class Category(
-    val icon: ImageVector,
-    val name: String
-)
 
-val expenseCategories = listOf(
-    Category(
-        icon = Icons.Default.Restaurant,
-        name = "Alimentation"
-    ),
-    Category(
-        icon = Icons.Default.Wifi,
-        name = "Internet"
-    )
-)
-
-private val incomeCategories = listOf(
-    Category(
-        icon = Icons.Default.Movie,
-        name = "Movie"
-    ),
-    Category(
-        icon = Icons.Default.Work,
-        name = "Work"
-    )
-)
