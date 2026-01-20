@@ -66,8 +66,7 @@ sealed class FormEvent {
     data class AmountChanged(val amount: String) : FormEvent()
     data class CategoryChanged(val name: String) : FormEvent()
     data class DateChanged(val date: Long) : FormEvent()
-    data class TransactionFilterChanged(val transactionFilterSelector: TransactionFilterSelector) :
-        FormEvent()
+    data class TransactionFilterChanged(val transactionFilterSelector: TransactionFilterSelector) : FormEvent()
 }
 
 

@@ -1,5 +1,7 @@
 package com.example.expensetracker.presentation.addTransaction
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -36,10 +38,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -66,6 +70,7 @@ import com.example.expensetracker.utils.toHumanDate
 
 @Composable
 fun AddTransactionRoute() {
+    AddTransactionScreen()
 }
 
 @Preview(showBackground = true)
@@ -78,6 +83,7 @@ private fun AddTransactionScreen(
 
     val state by addTransactionViewModel.state.collectAsStateWithLifecycle()
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -95,16 +101,21 @@ private fun AddTransactionScreen(
                             contentDescription = "Back"
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onBackground
+                )
             )
-        }
+        },
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             TransactionFilterSelector {
                 addTransactionViewModel.formEvent(
@@ -114,112 +125,155 @@ private fun AddTransactionScreen(
                 )
             }
             Spacer(Modifier.height(20.dp))
-            InputField(
-                label = "Description",
-                fieldValue = state.description,
-                icon = Icons.AutoMirrored.Filled.Notes,
-                error = state.descriptionError
-            ) { addTransactionViewModel.formEvent(FormEvent.DescriptionChanged(it)) }
-            InputField(
-                label = "Amount",
-                fieldValue = state.amount.toString(),
-                icon = Icons.Default.AttachMoney,
-                error = state.amountError,
-                isNumber = true
-            ) { addTransactionViewModel.formEvent(FormEvent.AmountChanged(it)) }
 
-            CategoryField(
-                selectedCategory = state.category,
-                categories = state.categoriesForTransaction
-            ) { addTransactionViewModel.formEvent(FormEvent.CategoryChanged(it)) }
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                InputField(
+                    label = "Description",
+                    fieldValue = state.description,
+                    icon = Icons.AutoMirrored.Filled.Notes,
+                    error = state.descriptionError
+                ) { addTransactionViewModel.formEvent(FormEvent.DescriptionChanged(it)) }
+                InputField(
+                    label = "Amount",
+                    fieldValue = state.amount.toString(),
+                    icon = Icons.Default.AttachMoney,
+                    error = state.amountError,
+                    isNumber = true
+                ) { addTransactionViewModel.formEvent(FormEvent.AmountChanged(it)) }
 
-            DateTransaction(
-                date = state.date
-            ) { addTransactionViewModel.formEvent(FormEvent.DateChanged(it)) }
+                CategoryField(
+                    selectedCategory = state.category,
+                    categories = state.categoriesForTransaction
+                ) { addTransactionViewModel.formEvent(FormEvent.CategoryChanged(it)) }
+
+                DateTransaction(
+                    date = state.date
+                ) { addTransactionViewModel.formEvent(FormEvent.DateChanged(it)) }
+            }
 
             Button(
                 onClick = {},
                 shape = MaterialTheme.shapes.medium,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.onBackground
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(vertical = 16.dp)
+                    .height(50.dp)
             ) {
-                Text(text = "Ajouter")
+                Text(text = "AJOUTER", style = MaterialTheme.typography.labelLarge)
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DateTransaction(date: Long, onSelectedDate: (Long) -> Unit) {
-    var showModal by remember { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = date
-    )
+private fun TransactionFilterSelector(onTransactionFilterChanged: (TransactionFilterSelector) -> Unit) {
+
+    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
+    val containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+    val borderColor = MaterialTheme.colorScheme.outlineVariant
+
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, borderColor, RoundedCornerShape(24.dp))
+            .height(48.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(containerColor)
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        TransactionFilterSelector.entries.forEachIndexed { index, transaction ->
+            val isSelected = selectedIndex == index
+
+            val backgroundColor by animateColorAsState(
+                targetValue = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                animationSpec = tween(300),
+                label = "bgAnim"
+            )
+
+            val contentColor by animateColorAsState(
+                targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                label = "textAnim"
+            )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(backgroundColor)
+                    .clickable {
+                        selectedIndex = index
+                        onTransactionFilterChanged(transaction)
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = transaction.displayName,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = contentColor,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun InputField(
+    label: String,
+    fieldValue: String,
+    icon: ImageVector? = null,
+    isNumber: Boolean = false,
+    error: String?,
+    onfieldInputChanged: (String) -> Unit
+) {
 
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = "Date",
+            text = label,
             style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.padding(bottom = 4.dp)
         )
         OutlinedTextField(
-            value = date.toHumanDate(),
-            onValueChange = {},
-            readOnly = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .pointerInput(date) {
-                    awaitEachGesture {
-                        awaitFirstDown(pass = PointerEventPass.Initial)
-                        val upEvent = waitForUpOrCancellation(pass = PointerEventPass.Initial)
-                        if (upEvent != null) {
-                            showModal = true
-                        }
-                    }
-                },
+            value = fieldValue,
+            onValueChange = onfieldInputChanged,
+            modifier = Modifier.fillMaxWidth(),
+            textStyle = MaterialTheme.typography.bodyLarge,
+            isError = error != null,
+            keyboardOptions = if (isNumber) KeyboardOptions(
+                keyboardType = KeyboardType.Number
+            ) else KeyboardOptions.Default,
             trailingIcon = {
-                Icon(
-                    imageVector = Icons.Default.DateRange, contentDescription = "Date"
-                )
+                if (icon != null) {
+                    Icon(
+                        imageVector = icon, contentDescription = label
+                    )
+                }
             },
-            maxLines = 1,
+            singleLine = true,
             shape = MaterialTheme.shapes.small,
-            colors = TextFieldDefaults.colors(
-                unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent,
-                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                focusedContainerColor = MaterialTheme.colorScheme.surface
+                errorContainerColor = Color.Transparent,
             )
         )
-    }
-
-    if (showModal) {
-        DatePickerDialog(
-            onDismissRequest = { showModal = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    datePickerState.selectedDateMillis?.let {
-                        onSelectedDate(it)
-                    }
-                    showModal = false
-                }) {
-                    Text("OK")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showModal = false }) {
-                    Text("Cancel")
-                }
-            }
-        ) {
-            DatePicker(state = datePickerState)
+        if (error != null) {
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+            )
         }
     }
 }
@@ -252,12 +306,11 @@ private fun CategoryField(
                 onValueChange = {},
                 readOnly = true,
                 shape = MaterialTheme.shapes.small,
+                textStyle = MaterialTheme.typography.bodyLarge,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
                 colors = TextFieldDefaults.colors(
-                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f),
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                    focusedContainerColor = MaterialTheme.colorScheme.surface
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -290,98 +343,83 @@ private fun CategoryField(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun InputField(
-    label: String,
-    fieldValue: String,
-    icon: ImageVector? = null,
-    isNumber: Boolean = false,
-    error: String?,
-    onfieldInputChanged: (String) -> Unit
-) {
+private fun DateTransaction(date: Long, onSelectedDate: (Long) -> Unit) {
+    var showModal by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = date
+    )
 
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = label,
+            text = "Date",
             style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.padding(bottom = 4.dp)
         )
         OutlinedTextField(
-            value = fieldValue,
-            onValueChange = onfieldInputChanged,
-            modifier = Modifier.fillMaxWidth(),
-            isError = error != null,
-            keyboardOptions = if (isNumber) KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            ) else KeyboardOptions.Default,
+            value = date.toHumanDate(),
+            onValueChange = {},
+            readOnly = true,
+            textStyle = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier
+                .fillMaxWidth()
+                .pointerInput(date) {
+                    awaitEachGesture {
+                        awaitFirstDown(pass = PointerEventPass.Initial)
+                        val upEvent = waitForUpOrCancellation(pass = PointerEventPass.Initial)
+                        if (upEvent != null) {
+                            showModal = true
+                        }
+                    }
+                },
             trailingIcon = {
-                if (icon != null) {
-                    Icon(
-                        imageVector = icon, contentDescription = label
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Default.DateRange, contentDescription = "Date"
+                )
             },
-            maxLines = 1,
+            enabled = false,
+            singleLine = true,
             shape = MaterialTheme.shapes.small,
-            colors = TextFieldDefaults.colors(
-                unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent,
-                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                focusedContainerColor = MaterialTheme.colorScheme.surface
+                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledBorderColor = MaterialTheme.colorScheme.outline
             )
         )
-        if (error != null) {
-            Text(
-                text = error,
-                color = MaterialTheme.colorScheme.error
-            )
-        }
     }
-}
 
-val PrimaryCyan = Color(0xFF00BCD4)
-
-
-@Composable
-private fun TransactionFilterSelector(onTransactionFilterChanged: (TransactionFilterSelector) -> Unit) {
-
-    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, Color(0xFFEEEEEE), RoundedCornerShape(24.dp))
-            .height(48.dp)
-            .clip(RoundedCornerShape(24.dp))
-            .background(Color(0xFFF5F5F5))
-            .padding(4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        TransactionFilterSelector.entries.forEachIndexed { index, transaction ->
-            val isSelected = selectedIndex == index
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(if (isSelected) PrimaryCyan else Color.Transparent)
-                    .clickable {
-                        selectedIndex = index
-                        onTransactionFilterChanged(transaction)
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = transaction.displayName,
-                    fontSize = 14.sp,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                )
+    if (showModal) {
+        DatePickerDialog(
+            onDismissRequest = { showModal = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let {
+                        onSelectedDate(it)
+                    }
+                    showModal = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showModal = false }) {
+                    Text("Cancel")
+                }
             }
+        ) {
+            DatePicker(state = datePickerState)
         }
     }
 }
+
+
+
 
 enum class TransactionFilterSelector(val displayName: String) {
     EXPENSE("Depense"),
