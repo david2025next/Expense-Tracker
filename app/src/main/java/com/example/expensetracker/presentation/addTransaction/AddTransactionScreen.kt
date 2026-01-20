@@ -1,4 +1,4 @@
-package com.example.expensetracker.presentation.AddTransaction
+package com.example.expensetracker.presentation.addTransaction
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,10 +23,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Movie
-import androidx.compose.material.icons.filled.Restaurant
-import androidx.compose.material.icons.filled.Wifi
-import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -50,6 +46,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,15 +60,23 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.expensetracker.utils.toHumanDate
 
 @Composable
-fun AddTransactionRoute() {}
+fun AddTransactionRoute() {
+}
 
 @Preview(showBackground = true)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AddTransactionScreen(modifier: Modifier = Modifier) {
+private fun AddTransactionScreen(
+    modifier: Modifier = Modifier,
+    addTransactionViewModel: AddTransactionViewModel = viewModel()
+) {
 
+    val state by addTransactionViewModel.state.collectAsStateWithLifecycle()
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -101,27 +106,36 @@ private fun AddTransactionScreen(modifier: Modifier = Modifier) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            TransactionFilterSelector()
+            TransactionFilterSelector {
+                addTransactionViewModel.formEvent(
+                    FormEvent.TransactionFilterChanged(
+                        it
+                    )
+                )
+            }
             Spacer(Modifier.height(20.dp))
             InputField(
                 label = "Description",
-                fieldValue = "",
+                fieldValue = state.description,
                 icon = Icons.AutoMirrored.Filled.Notes,
-            ) {}
+                error = state.descriptionError
+            ) { addTransactionViewModel.formEvent(FormEvent.DescriptionChanged(it)) }
             InputField(
                 label = "Amount",
-                fieldValue = "",
+                fieldValue = state.amount.toString(),
                 icon = Icons.Default.AttachMoney,
-            ) {}
+                error = state.amountError,
+                isNumber = true
+            ) { addTransactionViewModel.formEvent(FormEvent.AmountChanged(it)) }
 
             CategoryField(
-                selectedCategory = expenseCategories.first(),
-                categories = expenseCategories
-            ) { }
+                selectedCategory = state.category,
+                categories = state.categoriesForTransaction
+            ) { addTransactionViewModel.formEvent(FormEvent.CategoryChanged(it)) }
 
             DateTransaction(
-                date = "21 oct, 2025"
-            ) { }
+                date = state.date
+            ) { addTransactionViewModel.formEvent(FormEvent.DateChanged(it)) }
 
             Button(
                 onClick = {},
@@ -129,7 +143,8 @@ private fun AddTransactionScreen(modifier: Modifier = Modifier) {
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.onBackground
                 ),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .padding(16.dp)
             ) {
                 Text(text = "Ajouter")
@@ -138,39 +153,13 @@ private fun AddTransactionScreen(modifier: Modifier = Modifier) {
     }
 }
 
-data class Category(
-    val icon: ImageVector,
-    val name: String
-)
-
-private val expenseCategories = listOf(
-    Category(
-        icon = Icons.Default.Restaurant,
-        name = "Alimentation"
-    ),
-    Category(
-        icon = Icons.Default.Wifi,
-        name = "Internet"
-    )
-)
-
-private val incomeCategories = listOf(
-    Category(
-        icon = Icons.Default.Movie,
-        name = "Movie"
-    ),
-    Category(
-        icon = Icons.Default.Work,
-        name = "Work"
-    )
-)
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DateTransaction(date: String, onSelectedDate: (Long) -> Unit) {
+private fun DateTransaction(date: Long, onSelectedDate: (Long) -> Unit) {
     var showModal by remember { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState()
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = date
+    )
 
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -181,7 +170,7 @@ private fun DateTransaction(date: String, onSelectedDate: (Long) -> Unit) {
             modifier = Modifier.padding(bottom = 4.dp)
         )
         OutlinedTextField(
-            value = date,
+            value = date.toHumanDate(),
             onValueChange = {},
             readOnly = true,
             modifier = Modifier
@@ -238,7 +227,7 @@ private fun DateTransaction(date: String, onSelectedDate: (Long) -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CategoryField(
-    selectedCategory: Category,
+    selectedCategory: String,
     categories: List<Category>,
     onCategoryChanged: (String) -> Unit
 ) {
@@ -259,7 +248,7 @@ private fun CategoryField(
                 modifier = Modifier.padding(bottom = 4.dp)
             )
             OutlinedTextField(
-                value = selectedCategory.name,
+                value = selectedCategory,
                 onValueChange = {},
                 readOnly = true,
                 shape = MaterialTheme.shapes.small,
@@ -307,6 +296,7 @@ private fun InputField(
     fieldValue: String,
     icon: ImageVector? = null,
     isNumber: Boolean = false,
+    error: String?,
     onfieldInputChanged: (String) -> Unit
 ) {
 
@@ -322,6 +312,7 @@ private fun InputField(
             value = fieldValue,
             onValueChange = onfieldInputChanged,
             modifier = Modifier.fillMaxWidth(),
+            isError = error != null,
             keyboardOptions = if (isNumber) KeyboardOptions(
                 keyboardType = KeyboardType.Number
             ) else KeyboardOptions.Default,
@@ -341,6 +332,12 @@ private fun InputField(
                 focusedContainerColor = MaterialTheme.colorScheme.surface
             )
         )
+        if (error != null) {
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
     }
 }
 
@@ -348,9 +345,10 @@ val PrimaryCyan = Color(0xFF00BCD4)
 
 
 @Composable
-private fun TransactionFilterSelector() {
+private fun TransactionFilterSelector(onTransactionFilterChanged: (TransactionFilterSelector) -> Unit) {
 
-    var selectedIndex by remember { mutableIntStateOf(0) }
+    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -371,7 +369,7 @@ private fun TransactionFilterSelector() {
                     .background(if (isSelected) PrimaryCyan else Color.Transparent)
                     .clickable {
                         selectedIndex = index
-                        // changed category list onTransactionFilterChanged
+                        onTransactionFilterChanged(transaction)
                     },
                 contentAlignment = Alignment.Center
             ) {
