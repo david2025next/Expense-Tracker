@@ -97,8 +97,8 @@ class AddTransactionViewModel constructor(
         viewModelScope.launch {
             addTransactionUseCase(
                 Transaction(
-                    amount = _state.value.amount.toLong(),
-                    description = _state.value.description,
+                    amount = _state.value.amount.trim().toLong(),
+                    description = _state.value.description.trim(),
                     date = _state.value.date,
                     category = _state.value.category,
                     transactionType = _state.value.transactionType
