@@ -158,7 +158,7 @@ private fun AddTransactionScreen(
             }
 
             Button(
-                onClick = {},
+                onClick = {addTransactionViewModel.formEvent(FormEvent.Submit)},
                 shape = MaterialTheme.shapes.medium,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
@@ -239,42 +239,44 @@ private fun InputField(
     onfieldInputChanged: (String) -> Unit
 ) {
 
-    OutlinedTextField(
-        value = fieldValue,
-        onValueChange = onfieldInputChanged,
-        label = {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium
-            )
-        },
-        modifier = Modifier.fillMaxWidth(),
-        textStyle = MaterialTheme.typography.bodyLarge,
-        isError = error != null,
-        keyboardOptions = if (isNumber) KeyboardOptions(
-            keyboardType = KeyboardType.Number
-        ) else KeyboardOptions.Default,
-        trailingIcon = {
-            if (icon != null) {
-                Icon(
-                    imageVector = icon, contentDescription = label
+    Column {
+        OutlinedTextField(
+            value = fieldValue,
+            onValueChange = onfieldInputChanged,
+            label = {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelMedium
                 )
-            }
-        },
-        singleLine = true,
-        shape = MaterialTheme.shapes.small,
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent
+            },
+            modifier = Modifier.fillMaxWidth(),
+            textStyle = MaterialTheme.typography.bodyLarge,
+            isError = error != null,
+            keyboardOptions = if (isNumber) KeyboardOptions(
+                keyboardType = KeyboardType.Number
+            ) else KeyboardOptions.Default,
+            trailingIcon = {
+                if (icon != null) {
+                    Icon(
+                        imageVector = icon, contentDescription = label
+                    )
+                }
+            },
+            singleLine = true,
+            shape = MaterialTheme.shapes.small,
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            )
         )
-    )
-    if (error != null) {
-        Text(
-            text = error,
-            color = MaterialTheme.colorScheme.error,
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(start = 16.dp, top = 4.dp)
-        )
+        if (error != null) {
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+            )
+        }
     }
 }
 

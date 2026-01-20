@@ -1,19 +1,26 @@
 package com.example.expensetracker.presentation.addTransaction
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.expensetracker.domain.model.Category
+import com.example.expensetracker.domain.model.Transaction
 import com.example.expensetracker.domain.model.TransactionType
 import com.example.expensetracker.domain.model.expenseCategories
 import com.example.expensetracker.domain.model.incomeCategories
+import com.example.expensetracker.domain.service.AddTransactionUseCase
 import com.example.expensetracker.domain.service.ValidateAmount
+import com.example.expensetracker.domain.service.ValidationDescription
 import com.example.expensetracker.utils.toMillis
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 class AddTransactionViewModel constructor(
-    private val validateAmount: ValidateAmount = ValidateAmount()
+    private val validateAmount: ValidateAmount = ValidateAmount(),
+    private val validationDescription: ValidationDescription = ValidationDescription(),
+    private val addTransactionUseCase: AddTransactionUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AddTransactionUiState())
@@ -61,6 +68,43 @@ class AddTransactionViewModel constructor(
                     }
                 }
             }
+
+            FormEvent.Submit -> {
+                submit()
+            }
+        }
+    }
+
+    private fun submit() {
+
+        val descriptionResult = validationDescription(_state.value.description)
+        val amountResult = validateAmount(_state.value.amount)
+
+        val hasError = listOf(
+            descriptionResult,
+            amountResult
+        ).any { !it.successful }
+
+        if (hasError) {
+            _state.update {
+                it.copy(
+                    descriptionError = descriptionResult.errorMessage,
+                    amountError = amountResult.errorMessage
+                )
+            }
+            return
+        }
+        viewModelScope.launch {
+            addTransactionUseCase(
+                Transaction(
+                    amount = _state.value.amount.toLong(),
+                    description = _state.value.description,
+                    date = _state.value.date,
+                    category = _state.value.category,
+                    transactionType = _state.value.transactionType
+                )
+            )
+            // show snackBar
         }
     }
 }
@@ -72,6 +116,8 @@ sealed class FormEvent {
     data class DateChanged(val date: Long) : FormEvent()
     data class TransactionFilterChanged(val transactionType: TransactionType) :
         FormEvent()
+
+    data object Submit : FormEvent()
 }
 
 
