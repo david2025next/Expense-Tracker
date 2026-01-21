@@ -11,15 +11,18 @@ import com.example.expensetracker.domain.service.AddTransactionUseCase
 import com.example.expensetracker.domain.service.ValidateAmount
 import com.example.expensetracker.domain.service.ValidationDescription
 import com.example.expensetracker.utils.toMillis
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import javax.inject.Inject
 
-class AddTransactionViewModel constructor(
-    private val validateAmount: ValidateAmount = ValidateAmount(),
-    private val validationDescription: ValidationDescription = ValidationDescription(),
+@HiltViewModel
+class AddTransactionViewModel @Inject constructor(
+    private val validateAmount: ValidateAmount,
+    private val validationDescription: ValidationDescription,
     private val addTransactionUseCase: AddTransactionUseCase
 ) : ViewModel() {
 
@@ -104,8 +107,12 @@ class AddTransactionViewModel constructor(
                     transactionType = _state.value.transactionType
                 )
             )
-            // show snackBar
+            _state.update { it.copy(snackBarMessage = "${state.value.transactionType.displayName} ajoute avec success") }
         }
+    }
+
+    fun resetForm(){
+        _state.update{ AddTransactionUiState() }
     }
 }
 
@@ -129,7 +136,8 @@ data class AddTransactionUiState(
     val category: String = expenseCategories.first().name,
     val categoriesForTransaction: List<Category> = expenseCategories,
     val date: Long = LocalDate.now().toMillis(),
-    val transactionType: TransactionType = TransactionType.EXPENSE
+    val transactionType: TransactionType = TransactionType.EXPENSE,
+    val snackBarMessage : String ? = null,
 )
 
 

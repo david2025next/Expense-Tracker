@@ -40,6 +40,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -47,6 +50,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -65,6 +69,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.expensetracker.domain.model.Category
@@ -72,21 +77,44 @@ import com.example.expensetracker.domain.model.TransactionType
 import com.example.expensetracker.utils.toHumanDate
 
 @Composable
-fun AddTransactionRoute() {
-    AddTransactionScreen()
+fun AddTransactionRoute(
+    addTransactionViewModel: AddTransactionViewModel = hiltViewModel(),
+    goToHome: () -> Unit
+) {
+    val snackBarHostState = remember { SnackbarHostState() }
+    AddTransactionScreen(
+        snackBarHostState = snackBarHostState,
+        addTransactionViewModel = addTransactionViewModel,
+        goToHome = goToHome
+    )
 }
 
-@Preview(showBackground = true)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AddTransactionScreen(
+    snackBarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
-    addTransactionViewModel: AddTransactionViewModel = viewModel()
+    addTransactionViewModel: AddTransactionViewModel = viewModel(),
+    goToHome: () -> Unit
 ) {
 
     val state by addTransactionViewModel.state.collectAsStateWithLifecycle()
+
+    state.snackBarMessage?.let { message ->
+        LaunchedEffect(state) {
+            snackBarHostState.showSnackbar(
+                message = message,
+                duration = SnackbarDuration.Short
+            )
+            addTransactionViewModel.resetForm()
+        }
+    }
+
     Scaffold(
+        modifier = modifier,
         containerColor = MaterialTheme.colorScheme.background,
+        snackbarHost = { SnackbarHost(snackBarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -97,7 +125,7 @@ private fun AddTransactionScreen(
                 },
                 navigationIcon = {
                     IconButton(
-                        onClick = {}
+                        onClick = goToHome
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -158,7 +186,7 @@ private fun AddTransactionScreen(
             }
 
             Button(
-                onClick = {addTransactionViewModel.formEvent(FormEvent.Submit)},
+                onClick = { addTransactionViewModel.formEvent(FormEvent.Submit) },
                 shape = MaterialTheme.shapes.medium,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
@@ -219,7 +247,7 @@ private fun TransactionFilterSelector(onTransactionFilterChanged: (TransactionTy
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = transaction.displayName,
+                    text = transaction.name,
                     style = MaterialTheme.typography.labelLarge,
                     color = contentColor,
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal

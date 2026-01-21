@@ -1,6 +1,8 @@
 package com.example.expensetracker.domain.service
 
-class ValidateAmount {
+import javax.inject.Inject
+
+class ValidateAmount @Inject constructor() {
 
     operator fun invoke(amount: String): ValidationResult {
 

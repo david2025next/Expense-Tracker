@@ -6,7 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.example.expensetracker.presentation.addTransaction.AddTransactionRoute
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -14,7 +16,7 @@ class MainActivity : ComponentActivity() {
         setContent {
 
             ExpenseTrackerTheme(darkTheme = true) {
-                AddTransactionRoute()
+                AddTransactionRoute(){}
             }
         }
     }

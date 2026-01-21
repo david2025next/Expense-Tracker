@@ -1,8 +1,9 @@
 package com.example.expensetracker.domain.service
 
 import androidx.core.text.isDigitsOnly
+import javax.inject.Inject
 
-class ValidationDescription {
+class ValidationDescription @Inject constructor() {
 
     operator fun invoke(description: String): ValidationResult {
 
