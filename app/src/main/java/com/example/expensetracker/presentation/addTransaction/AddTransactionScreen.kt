@@ -55,6 +55,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -75,6 +76,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.expensetracker.domain.model.Category
 import com.example.expensetracker.domain.model.TransactionType
 import com.example.expensetracker.utils.toHumanDate
+import kotlinx.coroutines.launch
 
 @Composable
 fun AddTransactionRoute(
@@ -83,15 +85,20 @@ fun AddTransactionRoute(
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
     val state by addTransactionViewModel.state.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
 
     state.snackBarMessage?.let { message ->
         LaunchedEffect(state) {
-            snackBarHostState.showSnackbar(
-                message = message,
-                withDismissAction = true,
-                duration = SnackbarDuration.Short
-            )
-            addTransactionViewModel.resetForm()
+            scope.launch {
+                launch {
+                    snackBarHostState.showSnackbar(
+                        message = message,
+                        withDismissAction = true,
+                        duration = SnackbarDuration.Short
+                    )
+                }
+                addTransactionViewModel.resetForm()
+            }
         }
     }
     AddTransactionScreen(
@@ -151,6 +158,7 @@ private fun AddTransactionScreen(
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             TransactionFilterSelector(
+                selectedTransactionTypeOrdinal = addTransactionUiState.transactionType.ordinal,
                 onTransactionFilterChanged = { onFormEvent(FormEvent.TransactionFilterChanged(it)) }
             )
             Spacer(Modifier.height(20.dp))
@@ -215,19 +223,17 @@ private fun AddTransactionScreenPreview(){
     val snackBarHostState = remember { SnackbarHostState() }
     AddTransactionScreen(
         snackBarHostState = snackBarHostState,
-        addTransactionUiState = AddTransactionUiState(),
+        addTransactionUiState = AddTransactionUiState(transactionType = TransactionType.INCOME),
         onFormEvent = {},
         onNavigationBack = {}
     )
 }
 
 @Composable
-private fun TransactionFilterSelector(onTransactionFilterChanged: (TransactionType) -> Unit) {
+private fun TransactionFilterSelector(selectedTransactionTypeOrdinal : Int, onTransactionFilterChanged: (TransactionType) -> Unit) {
 
-    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
     val containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
     val borderColor = MaterialTheme.colorScheme.outlineVariant
-
 
     Row(
         modifier = Modifier
@@ -239,8 +245,9 @@ private fun TransactionFilterSelector(onTransactionFilterChanged: (TransactionTy
             .padding(4.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+
         TransactionType.entries.forEachIndexed { index, transaction ->
-            val isSelected = selectedIndex == index
+            val isSelected = selectedTransactionTypeOrdinal == index
 
             val backgroundColor by animateColorAsState(
                 targetValue = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
@@ -259,7 +266,6 @@ private fun TransactionFilterSelector(onTransactionFilterChanged: (TransactionTy
                     .clip(RoundedCornerShape(20.dp))
                     .background(backgroundColor)
                     .clickable {
-                        selectedIndex = index
                         onTransactionFilterChanged(transaction)
                     },
                 contentAlignment = Alignment.Center
