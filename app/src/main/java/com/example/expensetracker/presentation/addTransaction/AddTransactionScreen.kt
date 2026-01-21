@@ -267,16 +267,15 @@ private fun InputField(
     onfieldInputChanged: (String) -> Unit
 ) {
 
-    Column {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
         OutlinedTextField(
             value = fieldValue,
             onValueChange = onfieldInputChanged,
-            label = {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelMedium
-                )
-            },
             modifier = Modifier.fillMaxWidth(),
             textStyle = MaterialTheme.typography.bodyLarge,
             isError = error != null,
@@ -324,27 +323,28 @@ private fun CategoryField(
     ) {
 
 
-        OutlinedTextField(
-            value = selectedCategory,
-            label = {
-                Text(
-                    text = "Category",
-                    style = MaterialTheme.typography.labelMedium
-                )
-            },
-            onValueChange = {},
-            readOnly = true,
-            shape = MaterialTheme.shapes.small,
-            textStyle = MaterialTheme.typography.bodyLarge,
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor()
-        )
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "Category",
+                style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            OutlinedTextField(
+                value = selectedCategory,
+                onValueChange = {},
+                readOnly = true,
+                shape = MaterialTheme.shapes.small,
+                textStyle = MaterialTheme.typography.bodyLarge,
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor()
+            )
+        }
 
         ExposedDropdownMenu(
             expanded = expanded,
@@ -380,40 +380,41 @@ private fun DateTransaction(date: Long, onSelectedDate: (Long) -> Unit) {
     )
 
 
-    OutlinedTextField(
-        value = date.toHumanDate(),
-        onValueChange = {},
-        label = {
-            Text(
-                text = "Date",
-                style = MaterialTheme.typography.labelMedium
-            )
-        },
-        readOnly = true,
-        textStyle = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier
-            .fillMaxWidth()
-            .pointerInput(date) {
-                awaitEachGesture {
-                    awaitFirstDown(pass = PointerEventPass.Initial)
-                    val upEvent = waitForUpOrCancellation(pass = PointerEventPass.Initial)
-                    if (upEvent != null) {
-                        showModal = true
-                    }
-                }
-            },
-        trailingIcon = {
-            Icon(
-                imageVector = Icons.Default.DateRange, contentDescription = "Date"
-            )
-        },
-        singleLine = true,
-        shape = MaterialTheme.shapes.small,
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "Date",
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
         )
-    )
+        OutlinedTextField(
+            value = date.toHumanDate(),
+            onValueChange = {},
+            readOnly = true,
+            textStyle = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier
+                .fillMaxWidth()
+                .pointerInput(date) {
+                    awaitEachGesture {
+                        awaitFirstDown(pass = PointerEventPass.Initial)
+                        val upEvent = waitForUpOrCancellation(pass = PointerEventPass.Initial)
+                        if (upEvent != null) {
+                            showModal = true
+                        }
+                    }
+                },
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.DateRange, contentDescription = "Date"
+                )
+            },
+            singleLine = true,
+            shape = MaterialTheme.shapes.small,
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            )
+        )
+    }
 
 
     if (showModal) {
