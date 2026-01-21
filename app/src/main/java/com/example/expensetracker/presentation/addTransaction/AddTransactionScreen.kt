@@ -82,10 +82,23 @@ fun AddTransactionRoute(
     goToHome: () -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
+    val state by addTransactionViewModel.state.collectAsStateWithLifecycle()
+
+    state.snackBarMessage?.let { message ->
+        LaunchedEffect(state) {
+            snackBarHostState.showSnackbar(
+                message = message,
+                withDismissAction = true,
+                duration = SnackbarDuration.Short
+            )
+            addTransactionViewModel.resetForm()
+        }
+    }
     AddTransactionScreen(
         snackBarHostState = snackBarHostState,
-        addTransactionViewModel = addTransactionViewModel,
-        goToHome = goToHome
+        addTransactionUiState = state,
+        onNavigationBack = goToHome,
+        onFormEvent = addTransactionViewModel::formEvent
     )
 }
 
@@ -94,22 +107,11 @@ fun AddTransactionRoute(
 @Composable
 private fun AddTransactionScreen(
     snackBarHostState: SnackbarHostState,
+    addTransactionUiState: AddTransactionUiState,
     modifier: Modifier = Modifier,
-    addTransactionViewModel: AddTransactionViewModel = viewModel(),
-    goToHome: () -> Unit
+    onNavigationBack: () -> Unit,
+    onFormEvent: (FormEvent) -> Unit
 ) {
-
-    val state by addTransactionViewModel.state.collectAsStateWithLifecycle()
-
-    state.snackBarMessage?.let { message ->
-        LaunchedEffect(state) {
-            snackBarHostState.showSnackbar(
-                message = message,
-                duration = SnackbarDuration.Short
-            )
-            addTransactionViewModel.resetForm()
-        }
-    }
 
     Scaffold(
         modifier = modifier,
@@ -125,7 +127,7 @@ private fun AddTransactionScreen(
                 },
                 navigationIcon = {
                     IconButton(
-                        onClick = goToHome
+                        onClick = onNavigationBack
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -148,13 +150,9 @@ private fun AddTransactionScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            TransactionFilterSelector {
-                addTransactionViewModel.formEvent(
-                    FormEvent.TransactionFilterChanged(
-                        it
-                    )
-                )
-            }
+            TransactionFilterSelector(
+                onTransactionFilterChanged = { onFormEvent(FormEvent.TransactionFilterChanged(it)) }
+            )
             Spacer(Modifier.height(20.dp))
 
             Column(
@@ -162,33 +160,37 @@ private fun AddTransactionScreen(
             ) {
                 InputField(
                     label = "Description",
-                    fieldValue = state.description,
+                    fieldValue = addTransactionUiState.description,
                     placeholder = "Entrez une description",
                     icon = Icons.AutoMirrored.Filled.Notes,
-                    error = state.descriptionError
-                ) { addTransactionViewModel.formEvent(FormEvent.DescriptionChanged(it)) }
+                    error = addTransactionUiState.descriptionError,
+                    onfieldInputChanged = { onFormEvent(FormEvent.DescriptionChanged(it)) }
+                )
 
                 InputField(
                     label = "Amount",
-                    fieldValue = state.amount,
+                    fieldValue = addTransactionUiState.amount,
                     icon = Icons.Default.AttachMoney,
-                    error = state.amountError,
+                    error = addTransactionUiState.amountError,
                     placeholder = "Entrez le montant",
-                    isNumber = true
-                ) { addTransactionViewModel.formEvent(FormEvent.AmountChanged(it)) }
+                    isNumber = true,
+                    onfieldInputChanged = { onFormEvent(FormEvent.AmountChanged(it)) }
+                )
 
                 CategoryField(
-                    selectedCategory = state.category,
-                    categories = state.categoriesForTransaction
-                ) { addTransactionViewModel.formEvent(FormEvent.CategoryChanged(it)) }
+                    selectedCategory = addTransactionUiState.category,
+                    categories = addTransactionUiState.categoriesForTransaction,
+                    onCategoryChanged = { onFormEvent(FormEvent.CategoryChanged(it)) }
+                )
 
                 DateTransaction(
-                    date = state.date
-                ) { addTransactionViewModel.formEvent(FormEvent.DateChanged(it)) }
+                    date = addTransactionUiState.date,
+                    onSelectedDate = { onFormEvent(FormEvent.DateChanged(it)) }
+                )
             }
 
             Button(
-                onClick = { addTransactionViewModel.formEvent(FormEvent.Submit) },
+                onClick = { onFormEvent(FormEvent.Submit) },
                 shape = MaterialTheme.shapes.medium,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
@@ -203,6 +205,20 @@ private fun AddTransactionScreen(
             }
         }
     }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+private fun AddTransactionScreenPreview(){
+
+    val snackBarHostState = remember { SnackbarHostState() }
+    AddTransactionScreen(
+        snackBarHostState = snackBarHostState,
+        addTransactionUiState = AddTransactionUiState(),
+        onFormEvent = {},
+        onNavigationBack = {}
+    )
 }
 
 @Composable
@@ -265,7 +281,7 @@ private fun InputField(
     fieldValue: String,
     icon: ImageVector? = null,
     isNumber: Boolean = false,
-    placeholder : String,
+    placeholder: String,
     error: String?,
     onfieldInputChanged: (String) -> Unit
 ) {
@@ -280,7 +296,7 @@ private fun InputField(
             value = fieldValue,
             onValueChange = onfieldInputChanged,
             modifier = Modifier.fillMaxWidth(),
-            placeholder = {Text(text = placeholder)},
+            placeholder = { Text(text = placeholder) },
             textStyle = MaterialTheme.typography.bodyLarge,
             isError = error != null,
             keyboardOptions = if (isNumber) KeyboardOptions(
