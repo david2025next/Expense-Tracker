@@ -163,6 +163,7 @@ private fun AddTransactionScreen(
                 InputField(
                     label = "Description",
                     fieldValue = state.description,
+                    placeholder = "Entrez une description",
                     icon = Icons.AutoMirrored.Filled.Notes,
                     error = state.descriptionError
                 ) { addTransactionViewModel.formEvent(FormEvent.DescriptionChanged(it)) }
@@ -172,6 +173,7 @@ private fun AddTransactionScreen(
                     fieldValue = state.amount,
                     icon = Icons.Default.AttachMoney,
                     error = state.amountError,
+                    placeholder = "Entrez le montant",
                     isNumber = true
                 ) { addTransactionViewModel.formEvent(FormEvent.AmountChanged(it)) }
 
@@ -263,6 +265,7 @@ private fun InputField(
     fieldValue: String,
     icon: ImageVector? = null,
     isNumber: Boolean = false,
+    placeholder : String,
     error: String?,
     onfieldInputChanged: (String) -> Unit
 ) {
@@ -277,6 +280,7 @@ private fun InputField(
             value = fieldValue,
             onValueChange = onfieldInputChanged,
             modifier = Modifier.fillMaxWidth(),
+            placeholder = {Text(text = placeholder)},
             textStyle = MaterialTheme.typography.bodyLarge,
             isError = error != null,
             keyboardOptions = if (isNumber) KeyboardOptions(

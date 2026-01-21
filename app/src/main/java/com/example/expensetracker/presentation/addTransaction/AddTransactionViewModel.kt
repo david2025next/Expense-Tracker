@@ -131,7 +131,7 @@ sealed class FormEvent {
 data class AddTransactionUiState(
     val description: String = "",
     val descriptionError: String? = null,
-    val amount: String = "100",
+    val amount: String = "",
     val amountError: String? = null,
     val category: String = expenseCategories.first().name,
     val categoriesForTransaction: List<Category> = expenseCategories,
