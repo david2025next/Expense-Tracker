@@ -69,7 +69,7 @@ fun HomeRoute(homeViewModel: HomeViewModel = hiltViewModel(), goToForm: () -> Un
 @Composable
 private fun HomeScreen(
     balanceSummaryAndDailyTotals: BalanceSummaryAndDailyTotalsUiState,
-    transactions : List<TransactionItemUState>,
+    transactions: List<TransactionItemUState>,
     onPeriodSelected: (PeriodRange) -> Unit,
     onNavigationClick: () -> Unit
 ) {
@@ -153,8 +153,8 @@ private fun TransactionOverviewCard(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = stringResource(R.string.suffixCurrency, totalBalance.toCurrency()),
-                style = MaterialTheme.typography.displayMedium,
+                text = "${totalBalance.toCurrency()} FCFA",
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(24.dp))
@@ -203,7 +203,7 @@ private fun OverviewStatItem(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                text = amount.toCurrency(),
+                text = "${amount.toCurrency()} F",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -271,7 +271,7 @@ private fun TransactionTodaySummary(
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = amount.toCurrency(),
+            text = "${amount.toCurrency()} F",
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.SemiBold,
             color = color
@@ -296,7 +296,10 @@ fun PeriodFilterSelector(
             val isSelected = period == periodFilter.displayName
             FilterChip(
                 selected = isSelected,
-                onClick = { onPeriodSelected(periodFilter) },
+                onClick = {
+                    period = periodFilter.displayName
+                    onPeriodSelected(periodFilter)
+                },
                 label = { Text(text = periodFilter.displayName) },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -360,7 +363,7 @@ fun TransactionItem(
         }
 
         Text(
-            text = transactionItemUState.amount.toCurrency(),
+            text = "${if (transactionItemUState.isExpense) "-" else "+"}${transactionItemUState.amount.toCurrency()}F",
             style = MaterialTheme.typography.bodyLarge,
             fontWeight = FontWeight.Bold,
             color = if (transactionItemUState.isExpense) MaterialTheme.colorScheme.error else Color(

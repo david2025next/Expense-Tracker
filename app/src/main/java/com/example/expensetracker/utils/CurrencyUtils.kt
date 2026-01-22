@@ -6,6 +6,6 @@ import java.util.Locale
 
 
 fun Long.toCurrency(locale: Locale = Locale.getDefault()) : String {
-    val formatter = NumberFormat.getCurrencyInstance(locale)
+    val formatter = NumberFormat.getNumberInstance(locale)
     return formatter.format(this)
 }

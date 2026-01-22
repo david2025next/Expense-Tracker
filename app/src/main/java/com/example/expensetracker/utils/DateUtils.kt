@@ -20,10 +20,12 @@ fun Long.toHumanDate(
 
 }
 
-fun LocalDate.toMillis(zoneId: ZoneId = ZoneId.systemDefault()): Long = this
-    .atStartOfDay(zoneId)
-    .toInstant()
-    .toEpochMilli()
+fun LocalDate.toMillis(zoneId: ZoneId = ZoneId.systemDefault()): Long {
+    return this
+        .atStartOfDay(zoneId)
+        .toInstant()
+        .toEpochMilli()
+}
 
 
 fun humanReadableDateWeek(
@@ -47,7 +49,7 @@ fun humanReadableDateMonth(
         .atZone(zoneId)
         .toLocalDate()
     val today = LocalDate.now()
-    return when{
+    return when {
         date.isEqual(today.minusDays(1)) -> "Hier"
         date.isEqual(today) -> "Aujourd'hui"
         else -> date.format(DateTimeFormatter.ofPattern("d MMMM", locale))
@@ -67,8 +69,8 @@ fun humanReadableDateCustom(
 
 
 data class DateRange(
-    val start : Long,
-    val end : Long
+    val start: Long,
+    val end: Long
 )
 
 fun monthRange(zoneId: ZoneId = ZoneId.systemDefault()): DateRange {
@@ -84,7 +86,7 @@ fun todayRange(zoneId: ZoneId = ZoneId.systemDefault()): DateRange {
     val today = LocalDate.now(zoneId)
     return DateRange(
         today.atStartOfDay(zoneId).toInstant().toEpochMilli(),
-        today.plusDays(1).atStartOfDay(zoneId).toInstant().toEpochMilli() - 1
+        today.plusDays(2).atStartOfDay(zoneId).toInstant().toEpochMilli() - 1
     )
 }
 
