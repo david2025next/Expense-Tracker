@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.expensetracker.presentation.addTransaction.AddTransactionRoute
 import com.example.expensetracker.presentation.home.HomeRoute
+import com.example.expensetracker.presentation.register.RegisterRouter
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -33,13 +34,18 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun ExpenseTracker(navHostController: NavHostController){
 
-    NavHost(navController = navHostController, startDestination = "HOME"){
+    NavHost(navController = navHostController, startDestination = "REGISTER"){
 
         composable("HOME"){
             HomeRoute { navHostController.navigate("FORM") }
         }
         composable("FORM"){
             AddTransactionRoute { navHostController.popBackStack() }
+        }
+        composable("REGISTER"){
+            RegisterRouter {
+                navHostController.navigate("HOME")
+            }
         }
     }
 }

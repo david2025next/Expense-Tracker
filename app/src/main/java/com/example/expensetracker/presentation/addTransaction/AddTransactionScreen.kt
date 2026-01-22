@@ -79,7 +79,7 @@ fun AddTransactionRoute(
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
     val state by addTransactionViewModel.state.collectAsStateWithLifecycle()
-    val scope = rememberCoroutineScope()
+
 
     state.message?.let { message ->
         LaunchedEffect(state) {
@@ -272,7 +272,7 @@ private fun TransactionFilterSelector(selectedTransactionTypeOrdinal : Int, onTr
 }
 
 @Composable
-private fun InputField(
+fun InputField(
     label: String,
     fieldValue: String,
     icon: ImageVector? = null,
@@ -286,7 +286,7 @@ private fun InputField(
         Text(
             text = label,
             style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 5.dp)
         )
         OutlinedTextField(
             value = fieldValue,
