@@ -12,7 +12,6 @@ data class Category(
     val name: String
 )
 
-// a modifier pour adapter selon les normes des ressources
 val expenseCategories = listOf(
     Category(
         icon = Icons.Default.Restaurant,
@@ -34,3 +33,5 @@ val incomeCategories = listOf(
         name = "Work"
     )
 )
+
+fun findIconByCategoryName(name : String) = (expenseCategories+incomeCategories).first { it.name==name }.icon

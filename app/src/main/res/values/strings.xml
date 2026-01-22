@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Expense Tracker</string>
+    <string name="expenseDisplayName">Dépenses</string>
+    <string name="revenuDisplayName">Revenus</string>
+    <string name="total_balance">Solde Total</string>
+    <string name="totalbalance">Solde Total</string>
+    <string name="suffixCurrency">%1$s FCFA</string>
+    <string name="today">Aujourd\'hui</string>
+    <string name="enterTransaction">Entrées</string>
+    <string name="outTransaction">Sorties</string>
 </resources>
