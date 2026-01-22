@@ -81,18 +81,14 @@ fun AddTransactionRoute(
     val state by addTransactionViewModel.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
 
-    state.snackBarMessage?.let { message ->
+    state.message?.let { message ->
         LaunchedEffect(state) {
-            scope.launch {
-                launch {
-                    snackBarHostState.showSnackbar(
-                        message = message,
-                        withDismissAction = true,
-                        duration = SnackbarDuration.Short
-                    )
-                }
-                addTransactionViewModel.resetForm()
-            }
+            snackBarHostState.showSnackbar(
+                message = message,
+                withDismissAction = true,
+                duration = SnackbarDuration.Short
+            )
+            addTransactionViewModel.resetMessage()
         }
     }
     AddTransactionScreen(

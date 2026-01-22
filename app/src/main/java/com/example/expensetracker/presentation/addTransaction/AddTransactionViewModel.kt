@@ -107,11 +107,23 @@ class AddTransactionViewModel @Inject constructor(
                     transactionType = _state.value.transactionType
                 )
             )
-            _state.update { it.copy(snackBarMessage = "${state.value.transactionType.displayName} ajoute avec success") }
+                .fold(
+                    onSuccess = {
+                        _state.update { it.copy(message = "${state.value.transactionType.displayName} ajoute avec success") }
+                        resetForm()
+                    },
+                    onFailure = { error ->
+                        _state.update { it.copy(message = error.message, amountError = "") }
+                    }
+                )
         }
     }
 
-    fun resetForm(){
+    fun resetMessage(){
+        _state.update {it.copy(message = null)}
+    }
+
+    private fun resetForm(){
         _state.update{ AddTransactionUiState() }
     }
 }
@@ -137,7 +149,7 @@ data class AddTransactionUiState(
     val categoriesForTransaction: List<Category> = expenseCategories,
     val date: Long = LocalDate.now().toMillis(),
     val transactionType: TransactionType = TransactionType.EXPENSE,
-    val snackBarMessage : String ? = null,
+    val message : String ? = null,
 )
 
 
