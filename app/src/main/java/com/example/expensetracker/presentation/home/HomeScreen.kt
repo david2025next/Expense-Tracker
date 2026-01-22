@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -30,6 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,6 +52,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.expensetracker.R
 import com.example.expensetracker.domain.model.Period
+import com.example.expensetracker.presentation.register.ProfileImagePicker
 import com.example.expensetracker.utils.toCurrency
 
 @Composable
@@ -57,24 +60,54 @@ fun HomeRoute(homeViewModel: HomeViewModel = hiltViewModel(), goToForm: () -> Un
 
     val balanceSummaryAndDailyTotals by homeViewModel.balanceSummaryAndDailyTotals.collectAsStateWithLifecycle()
     val transactions by homeViewModel.transactions.collectAsStateWithLifecycle()
-
+    val userInfo by homeViewModel.userInfo.collectAsStateWithLifecycle()
     HomeScreen(
         balanceSummaryAndDailyTotals = balanceSummaryAndDailyTotals,
         transactions = transactions,
         onNavigationClick = goToForm,
+        userInfo = userInfo,
         onPeriodSelected = homeViewModel::selectedPeriodChanged
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeScreen(
     balanceSummaryAndDailyTotals: BalanceSummaryAndDailyTotalsUiState,
     transactions: List<TransactionItemUState>,
+    userInfo: UserInfo,
     onPeriodSelected: (PeriodRange) -> Unit,
     onNavigationClick: () -> Unit
 ) {
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+
+                    Column(
+                        modifier = Modifier.padding(start = 5.dp)
+                    ) {
+                        Text(
+                            text = "Salut ${userInfo.username}",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Text(
+                            text = "Faites le suivi de vos revenus et depenses",
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
+                },
+                navigationIcon = {
+                    ProfileImagePicker(
+                        size = 50.dp,
+                        iconSize = 0.dp,
+                        imageUri = userInfo.imageProfile,
+                        modifier = Modifier.padding(start = 5.dp)
+                    )
+                }
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onNavigationClick
@@ -91,7 +124,7 @@ private fun HomeScreen(
                 .padding(paddingValues)
                 .fillMaxSize()
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             Box(modifier = Modifier.padding(16.dp)) {
                 TransactionOverviewCard(
                     totalBalance = balanceSummaryAndDailyTotals.balance,

@@ -62,6 +62,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -295,9 +296,10 @@ fun InputField(
             placeholder = { Text(text = placeholder) },
             textStyle = MaterialTheme.typography.bodyLarge,
             isError = error != null,
-            keyboardOptions = if (isNumber) KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            ) else KeyboardOptions.Default,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = if(isNumber) KeyboardType.Number else KeyboardType.Text,
+                capitalization = KeyboardCapitalization.Words
+            ),
             trailingIcon = {
                 if (icon != null) {
                     Icon(

@@ -42,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -159,10 +160,15 @@ private fun RegisterScreen(
 }
 
 @Composable
-fun ProfileImagePicker(modifier: Modifier, imageUri: Uri?, onClick: () -> Unit) {
+fun ProfileImagePicker(
+    modifier: Modifier = Modifier,
+    size : Dp = 120.dp,
+    iconSize : Dp = 48.dp,
+    imageUri: Uri?,
+    onClick: () -> Unit = {}) {
     Box(
         modifier = modifier
-            .size(120.dp)
+            .size(size)
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .clickable(onClick = onClick),
@@ -180,7 +186,7 @@ fun ProfileImagePicker(modifier: Modifier, imageUri: Uri?, onClick: () -> Unit) 
                 imageVector = Icons.Default.CameraAlt,
                 contentDescription = "Select profile image",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(iconSize)
             )
         }
     }

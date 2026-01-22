@@ -1,8 +1,10 @@
 package com.example.expensetracker.presentation.home
 
+import android.net.Uri
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.expensetracker.data.datastore.UserPreferences
 import com.example.expensetracker.domain.model.Period
 import com.example.expensetracker.domain.model.Transaction
 import com.example.expensetracker.domain.model.TransactionType
@@ -28,10 +30,23 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     getBalanceSummary: GetBalanceSummary,
     getDailyTotals: GetDailyTotals,
-    private val getTransactionByPeriod: GetTransactionByPeriod
+    private val getTransactionByPeriod: GetTransactionByPeriod,
+    private val userPreferences: UserPreferences
 ) : ViewModel() {
 
-
+    val userInfo = userPreferences.getUsername()
+        .combine(userPreferences.getImageProfile()){
+            username , imageProfile ->
+            UserInfo(
+                username = username,
+                imageProfile = imageProfile
+            )
+        }
+        .stateIn(
+            viewModelScope,
+            initialValue = UserInfo(),
+            started = SharingStarted.WhileSubscribed(5000L)
+        )
     val balanceSummaryAndDailyTotals = getDailyTotals()
         .combine(getBalanceSummary()) { dailyTotals, balanceSummary ->
             BalanceSummaryAndDailyTotalsUiState(
@@ -115,3 +130,8 @@ enum class PeriodRange(val displayName: String) {
     MONTH("Mois"),
     CALENDAR("Calendrier")
 }
+
+data class UserInfo(
+    val username : String = "",
+    val imageProfile : Uri ? = null
+)
