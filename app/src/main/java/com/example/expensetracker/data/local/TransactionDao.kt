@@ -17,7 +17,7 @@ interface TransactionDao {
         """
         SELECT
             SUM(CASE WHEN transactionType = 'INCOME' THEN amount ELSE 0 END ) as totalsIncome,
-            SUM(CASE WHEN transactionType = 'EXPENSE' THEN amount ELSE 0 END ) as totalsIExpense
+            SUM(CASE WHEN transactionType = 'EXPENSE' THEN amount ELSE 0 END ) as totalsExpense
         FROM `TRANSACTION`
     """
     )
@@ -26,7 +26,7 @@ interface TransactionDao {
     @Query(
         """
         SELECT
-         SUM(CASE WHEN (transactionType = 'INCOME' and (date BETWEEN :start and :end)) THEN amount ELSE 0 END) as totalsIncome ,
+         SUM(CASE WHEN (transactionType = 'INCOME' and (date BETWEEN :start and :end)) THEN amount ELSE 0 END) as totalsIncome,
          SUM(CASE WHEN (transactionType = 'EXPENSE' and (date BETWEEN :start and :end)) THEN amount ELSE 0 END) as totalsExpense
         FROM `TRANSACTION`
     """
