@@ -8,7 +8,5 @@ import javax.inject.Inject
 class GetBalanceSummary @Inject constructor(
     private val transactionRepository: TransactionRepository
 ) {
-    operator fun invoke() : Flow<BalanceSummary>{
-        TODO()
-    }
+    operator fun invoke() : Flow<BalanceSummary> = transactionRepository.getBalanceSummary()
 }
