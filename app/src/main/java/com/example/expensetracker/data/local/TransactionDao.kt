@@ -39,7 +39,7 @@ interface TransactionDao {
 
     @Query(
         """
-        SELECT * FROM `TRANSACTION` WHERE date BETWEEN :start and :end
+        SELECT * FROM `TRANSACTION` WHERE date BETWEEN :start and :end ORDER BY date DESC
     """
     )
     fun getTransactionByPeriod(

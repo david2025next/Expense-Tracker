@@ -15,7 +15,7 @@ class AddTransactionUseCase @Inject constructor(
 
         if (transaction.transactionType == TransactionType.EXPENSE && (balanceSummary.balance - transaction.amount < 0)) {
             return Result.failure(
-                InsufficientFoundError("Fond Insuffisant pour effectuer cette depense")
+                InsufficientFoundError("Fond Insuffisant")
             )
         }
         transactionRepository.addTransaction(transaction)
