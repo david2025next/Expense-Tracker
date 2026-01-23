@@ -31,6 +31,7 @@ class RegisterViewModel @Inject constructor(
             is RegisterEvent.ImageProfile -> _state.update { it.copy(imageProfile = event.imageProfile) }
             RegisterEvent.Submit -> submit()
             is RegisterEvent.UsernameChanged -> _state.update { it.copy(username = event.username) }
+            is RegisterEvent.PasswordChanged -> _state.update { it.copy(password = event.password) }
         }
     }
     fun reset(){
@@ -63,6 +64,7 @@ class RegisterViewModel @Inject constructor(
 sealed class RegisterEvent {
     data class UsernameChanged(val username: String) : RegisterEvent()
     data class ImageProfile(val imageProfile: Uri?) : RegisterEvent()
+    data class PasswordChanged(val password : String) : RegisterEvent()
     data object Submit : RegisterEvent()
 }
 
@@ -70,5 +72,8 @@ data class RegisterUiState(
     val isLoading: Boolean = false,
     val imageProfile: Uri? = null,
     val username: String = "",
+    val errorUsername : String ? = null,
+    val password : String = "",
+    val errorPassword : String ? = null,
     val isUserLoggedIn : Boolean = false
 )

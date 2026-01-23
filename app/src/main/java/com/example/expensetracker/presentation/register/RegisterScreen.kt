@@ -1,9 +1,12 @@
 package com.example.expensetracker.presentation.register
 
+import android.R
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,15 +20,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,7 +50,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -86,29 +99,30 @@ private fun RegisterScreen(
     onRegisterEvent: (RegisterEvent) -> Unit
 ) {
 
+    var passwordVisibility by remember { mutableStateOf(false) }
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
         onRegisterEvent(RegisterEvent.ImageProfile(uri))
     }
-    Scaffold(
+    Box(
         modifier = modifier
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-                .padding(14.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
+    ){
 
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
             Text(
-                text = "Register",
+                text = "Bienvenue",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold
+                color = MaterialTheme.colorScheme.primary
             )
-            Spacer(Modifier.height(40.dp))
             ProfileImagePicker(
                 modifier = Modifier.padding(bottom = 32.dp),
                 imageUri = registerUiState.imageProfile,
@@ -120,40 +134,72 @@ private fun RegisterScreen(
                     )
                 }
             )
-            Spacer(Modifier.height(30.dp))
-            InputField(
-                label = "Username",
-                fieldValue = registerUiState.username,
-                icon = Icons.Default.Person,
-                placeholder = "Enter username",
-                error = null,
-                onfieldInputChanged = { onRegisterEvent(RegisterEvent.UsernameChanged(it)) }
-            )
-
-            Spacer(Modifier.height(24.dp))
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = registerUiState.username,
+                    shape = MaterialTheme.shapes.small,
+                    onValueChange = {onRegisterEvent(RegisterEvent.UsernameChanged(it))},
+                    label = {Text("Pseudo")},
+                    placeholder = {Text("Entrez votre pseudo")},
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    isError = registerUiState.errorUsername !=null
+                )
+                Spacer(Modifier.height(4.dp))
+                AnimatedVisibility(visible = registerUiState.errorUsername !=null) {
+                    Text(
+                        text = registerUiState.errorUsername.orEmpty(),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = registerUiState.password,
+                    shape = MaterialTheme.shapes.small,
+                    onValueChange = {onRegisterEvent(RegisterEvent.PasswordChanged(it))},
+                    label = {Text("Mot de passe")},
+                    placeholder = {Text("Entrez votre mot de passe")},
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    visualTransformation = if(passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(
+                            onClick = {passwordVisibility =!passwordVisibility}
+                        ) {
+                            Icon(
+                                imageVector = if(passwordVisibility)Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                null
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    isError = registerUiState.errorUsername !=null
+                )
+                Spacer(Modifier.height(4.dp))
+                AnimatedVisibility(visible = registerUiState.errorPassword !=null) {
+                    Text(
+                        text = registerUiState.errorPassword.orEmpty(),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
             Button(
-                onClick = { onRegisterEvent(RegisterEvent.Submit) },
-                enabled = registerUiState.username.isNotBlank() && registerUiState.imageProfile != null,
-                shape = MaterialTheme.shapes.medium,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                ),
+                onClick = {onRegisterEvent(RegisterEvent.Submit)},
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 16.dp)
+                    .padding(vertical = 8.dp),
+                enabled = !registerUiState.isLoading
             ) {
-                Text(
-                    text = "Register"
-                )
-            }
-
-            if (registerUiState.isLoading) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
+                if(registerUiState.isLoading){
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text("Register")
                 }
             }
         }
@@ -163,7 +209,7 @@ private fun RegisterScreen(
 @Composable
 fun ProfileImagePicker(
     modifier: Modifier = Modifier,
-    size : Dp = 120.dp,
+    size : Dp = 100.dp,
     iconSize : Dp = 48.dp,
     imageUri: Uri?,
     onClick: () -> Unit = {}) {

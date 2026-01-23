@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -21,14 +23,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -40,8 +47,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -51,7 +62,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.expensetracker.R
-import com.example.expensetracker.domain.model.Period
 import com.example.expensetracker.presentation.register.ProfileImagePicker
 import com.example.expensetracker.utils.toCurrency
 
@@ -81,6 +91,17 @@ private fun HomeScreen(
 ) {
 
     Scaffold(
+        bottomBar = {
+            CustomNavBar(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding(),
+                navBarItems = listOf(
+                    NavBarItem(Icons.Default.Home, "Home"),
+                    NavBarItem(Icons.Default.BarChart, "Statistics"),
+                )
+            )
+        },
         topBar = {
             TopAppBar(
                 title = {
@@ -108,12 +129,15 @@ private fun HomeScreen(
                 }
             )
         },
+        floatingActionButtonPosition = FabPosition.Center,
         floatingActionButton = {
             FloatingActionButton(
+                shape = CircleShape,
+                modifier = Modifier.offset(y = 45.dp),
                 onClick = onNavigationClick
             ) {
                 Icon(
-                    imageVector = Icons.Default.Add,
+                    imageVector = Icons.Filled.Add,
                     "Add"
                 )
             }
@@ -153,6 +177,11 @@ private fun HomeScreen(
             }
         }
     }
+}
+
+@Composable
+fun BottomNav() {
+
 }
 
 @Composable
@@ -429,6 +458,91 @@ private fun CustomIcon(
             tint = tint,
             modifier = Modifier.size(iconSize)
         )
+    }
+}
+
+data class NavBarItem(val icon: ImageVector, val text: String)
+
+@Composable
+fun CustomNavBar(modifier: Modifier = Modifier, navBarItems: List<NavBarItem>) {
+
+    require(navBarItems.size % 2 == 0)
+
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = modifier
+            .fillMaxWidth()
+            .drawBehind {
+                val navBarHeight = 64.dp.toPx()
+                val fabSize = 56.dp.toPx()
+                val fabOffset = 40.dp.toPx()
+                val fabPadding = 8.dp.toPx()
+
+                val cutoutRadius = (fabSize / 2) + fabPadding
+                val cutoutCenterX = size.width / 2f
+                val cutoutCenterY = navBarHeight - fabOffset
+
+                val path = Path().apply {
+                    moveTo(0f, 0f)
+                    lineTo(size.width, 0f)
+                    lineTo(size.width, navBarHeight)
+                    lineTo(cutoutCenterX + cutoutRadius, navBarHeight)
+
+                    arcTo(
+                        rect = Rect(
+                            left = cutoutCenterX - cutoutRadius,
+                            top = cutoutCenterY - cutoutRadius,
+                            right = cutoutCenterX + cutoutRadius,
+                            bottom = cutoutCenterY + cutoutRadius
+                        ),
+                        startAngleDegrees = 0f,
+                        sweepAngleDegrees = -180f,
+                        forceMoveTo = false
+                    )
+
+                    lineTo(0f, navBarHeight)
+                    close()
+
+                }
+
+                drawPath(path = path, color = Color.White, style = Fill)
+            }
+
+    ) {
+        NavigationBar(
+            //containerColor = MaterialTheme.colorScheme.background
+        ) {
+            navBarItems.forEach {
+                NavigationBarItem(
+                    selected = false,
+                    onClick = {},
+                    icon = {
+                        Icon(
+                            imageVector = it.icon,
+                            contentDescription = null,
+                            //tint = MaterialTheme.colorScheme.primary,
+                        )
+                    },
+                    label = {
+                        Text(text = it.text,)
+                    }
+                )
+            }
+        }
+//        navBarItems.forEach {
+//            Column(
+//                horizontalAlignment = Alignment.CenterHorizontally,
+//                modifier = Modifier
+//                    .padding(5.dp)
+//            ) {
+//                Icon(
+//                    imageVector = it.icon,
+//                    contentDescription = null,
+//                    tint = MaterialTheme.colorScheme.primary,
+//                    )
+//
+//            }
+//        }
     }
 }
 
