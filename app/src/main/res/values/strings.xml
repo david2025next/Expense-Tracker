@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Expense Tracker</string>
+    <string name="app_name">Mon Argent</string>
     <string name="expenseDisplayName">Dépenses</string>
     <string name="revenuDisplayName">Revenus</string>
     <string name="total_balance">Solde Total</string>
