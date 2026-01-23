@@ -68,6 +68,7 @@ fun RegisterRouter(
             .flowWithLifecycle(lifecycle)
             .collect {
                 currentOnUserRegister()
+                registerViewModel.reset()
             }
     }
     RegisterScreen(

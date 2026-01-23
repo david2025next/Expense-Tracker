@@ -43,6 +43,7 @@ android {
 
 dependencies {
 
+    implementation("androidx.core:core-splashscreen:1.2.0")
     implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("androidx.datastore:datastore-preferences:1.2.0")
     implementation(libs.androidx.navigation.compose)

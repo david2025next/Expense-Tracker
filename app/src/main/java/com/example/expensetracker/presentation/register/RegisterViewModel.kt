@@ -33,12 +33,15 @@ class RegisterViewModel @Inject constructor(
             is RegisterEvent.UsernameChanged -> _state.update { it.copy(username = event.username) }
         }
     }
+    fun reset(){
+        _state.update { it.copy(isUserLoggedIn = false) }
+    }
 
     private fun submit() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             val fileURI = copyProfileImage(_state.value.imageProfile!!)
-            userPreferences.savePreference(_state.value.username, fileURI)
+            userPreferences.savePreference(_state.value.username, fileURI, true)
             _state.update { it.copy(isLoading = false, isUserLoggedIn = true) }
 
         }
