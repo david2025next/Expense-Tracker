@@ -1,5 +1,6 @@
 package com.example.expensetracker
 
+import android.graphics.Paint
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -46,7 +47,7 @@ class MainActivity : ComponentActivity() {
         }
         enableEdgeToEdge()
         setContent {
-            ExpenseTrackerTheme() {
+            ExpenseTrackerTheme(darkTheme = true) {
                 RootNavHost(mainViewModel)
             }
         }
@@ -57,9 +58,16 @@ class MainActivity : ComponentActivity() {
         val navHostController = rememberNavController()
         val loginState by mainViewModel.loginState.collectAsStateWithLifecycle()
 
-        val startDest = remember(loginState) {
-            if (loginState == LoginState.LoggedIn) "HOME_GRAPH" else "REGISTER_GRAPH"
+        if(loginState== LoginState.LOADING){
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ){
+                CircularProgressIndicator()
+            }
+            return
         }
+        val startDest = if (loginState == LoginState.LoggedIn) "HOME_GRAPH" else "REGISTER_GRAPH"
         NavHost(navHostController, startDestination = startDest) {
             homeGraph(navHostController)
             registerGraph(navHostController)
