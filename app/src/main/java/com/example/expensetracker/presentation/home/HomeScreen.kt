@@ -130,7 +130,7 @@ private fun HomeScreen(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "-${homeUiState.totalsSpentForPeriod.toCurrency()} F",
+                            text = "-${homeUiState.totalsSpentForPeriod.toCurrency()}F",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.error
@@ -211,8 +211,8 @@ private fun BalanceCard(
             LinearProgressIndicator(
                 progress = { percent },
                 modifier = Modifier.fillMaxWidth(),
-                color = ProgressIndicatorDefaults.linearColor,
-                trackColor = ProgressIndicatorDefaults.linearTrackColor,
+                //color = ProgressIndicatorDefaults.linearColor,
+                color = if (percent > 0.5f) MaterialTheme.colorScheme.error else ProgressIndicatorDefaults.linearTrackColor,
                 strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
             )
         }
