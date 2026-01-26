@@ -24,6 +24,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -56,6 +57,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.expensetracker.R
 import com.example.expensetracker.presentation.register.ProfileImagePicker
 import com.example.expensetracker.utils.toCurrency
+import com.example.expensetracker.utils.toHumanDateToday
 
 @Composable
 fun HomeRoute(homeViewModel: HomeViewModel = hiltViewModel(), goToForm: () -> Unit) {
@@ -78,6 +80,8 @@ private fun HomeScreen(
     onPeriodSelected: (PeriodRange) -> Unit,
     onNavigationClick: () -> Unit
 ) {
+
+
     Scaffold(
         topBar = { HomeTopBar(userInfo) },
         floatingActionButton = {
@@ -85,66 +89,58 @@ private fun HomeScreen(
                 Icon(Icons.Default.Add, contentDescription = null)
             }
         },
+        floatingActionButtonPosition = FabPosition.Center,
         bottomBar = { HomeBottomBar() }
     ) { padding ->
 
-        if (homeUiState.isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
+
+        LazyColumn(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(16.dp)
+        ) {
+
+            item {
+                PeriodFilterSelector(
+                    periodsFilter = PeriodRange.entries.toTypedArray(),
+                    onPeriodSelected = onPeriodSelected
+                )
             }
-        } else {
 
-            LazyColumn(
-                modifier = Modifier
-                    .padding(padding)
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(16.dp)
-            ) {
-
-                item {
-                    PeriodFilterSelector(
-                        periodsFilter = PeriodRange.entries.toTypedArray(),
-                        onPeriodSelected = onPeriodSelected
+            item {
+                BalanceCard(
+                    balance = homeUiState.balance,
+                    percent = homeUiState.percent
+                )
+            }
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = homeUiState.period.displayName,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "-${homeUiState.totalsSpentForPeriod.toCurrency()}F",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.error
                     )
                 }
+            }
 
-                item {
-                    BalanceCard(
-                        balance = homeUiState.balance,
-                        percent = homeUiState.percent
-                    )
-                }
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = homeUiState.period.displayName,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "-${homeUiState.totalsSpentForPeriod.toCurrency()}F",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
-
-                items(homeUiState.transactions) {
-                    TransactionItem(it)
-                }
+            items(homeUiState.transactions) {
+                TransactionItem(it)
             }
         }
-
     }
+
 }
 
 
@@ -211,7 +207,6 @@ private fun BalanceCard(
             LinearProgressIndicator(
                 progress = { percent },
                 modifier = Modifier.fillMaxWidth(),
-                //color = ProgressIndicatorDefaults.linearColor,
                 color = if (percent > 0.5f) MaterialTheme.colorScheme.error else ProgressIndicatorDefaults.linearTrackColor,
                 strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
             )

@@ -8,6 +8,11 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
+fun toHumanDateToday(): String {
+    val today = LocalDate.now()
+    return DateTimeFormatter.ofPattern("d MMM yyyy", Locale.FRENCH).format(today)
+}
+
 fun Long.toHumanDate(
     locale: Locale = Locale.FRENCH,
     zoneId: ZoneId = ZoneId.systemDefault()

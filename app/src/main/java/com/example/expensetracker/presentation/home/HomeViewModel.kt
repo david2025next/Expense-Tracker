@@ -65,6 +65,13 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+
+            launch {
+                _selectedPeriod
+                    .flatMapLatest { newPeriod -> getTransactionByPeriod(newPeriod) }
+                    .onEach { trs -> _state.update { it.copy(transactions = trs.map { transaction ->  transaction.toUi() }) } }
+                    .collect()
+            }
             getBalanceSummary()
                 .onStart { _state.update { it.copy(isLoading = true) } }
                 .combine(getTransactionByPeriod(_selectedPeriod.value)) { balanceAndPercent, trs ->
@@ -82,11 +89,6 @@ class HomeViewModel @Inject constructor(
                 .collect()
         }
     }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val _transactions = _selectedPeriod
-        .flatMapLatest { newPeriod -> getTransactionByPeriod(newPeriod) }
-        .onEach { trs -> _state.update { it.copy(transactions = trs.map { it.toUi() }) } }
 
     fun selectedPeriodChanged(periodRange: PeriodRange) {
         _state.update { it.copy(period = periodRange) }
