@@ -33,6 +33,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -383,32 +384,17 @@ fun TransactionItem(
     modifier: Modifier = Modifier
 ) {
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        CustomIcon(
-            icon = transactionItemUState.icon,
-            size = 48.dp,
-            backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            iconSize = 24.dp
-        )
-
-        Spacer(Modifier.width(16.dp))
-
-        Column(
-            modifier = Modifier.weight(1f),
-        ) {
+    ListItem(
+        headlineContent = {
             Text(
                 text = transactionItemUState.description,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Row(verticalAlignment = Alignment.CenterVertically) {
+        },
+        supportingContent = {
+            Row {
                 Text(
                     text = transactionItemUState.category,
                     style = MaterialTheme.typography.bodySmall,
@@ -422,17 +408,48 @@ fun TransactionItem(
                     )
                 }
             }
-        }
-
-        Text(
-            text = "${if (transactionItemUState.isExpense) "-" else "+"}${transactionItemUState.amount.toCurrency()}F",
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Bold,
-            color = if (transactionItemUState.isExpense) MaterialTheme.colorScheme.error else Color(
-                0xFF2E7D32
+        },
+        leadingContent = {
+            CustomIcon(
+                icon = transactionItemUState.icon,
+                size = 48.dp,
+                backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                iconSize = 24.dp
             )
-        )
-    }
+        },
+        trailingContent = {
+            Text(
+                text = "${if (transactionItemUState.isExpense) "-" else "+"}${transactionItemUState.amount.toCurrency()}F",
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold,
+                color = if (transactionItemUState.isExpense) MaterialTheme.colorScheme.error else Color(
+                    0xFF2E7D32
+                )
+            )
+        }
+    )
+//    Row(
+//        modifier = modifier
+//            .fillMaxWidth()
+//            .padding(vertical = 8.dp, horizontal = 16.dp),
+//        verticalAlignment = Alignment.CenterVertically
+//    ) {
+//
+//
+//        Spacer(Modifier.width(16.dp))
+//
+//        Column(
+//            modifier = Modifier.weight(1f),
+//        ) {
+//
+//            Row(verticalAlignment = Alignment.CenterVertically) {
+//
+//            }
+//        }
+//
+//
+//    }
 }
 
 @Composable
