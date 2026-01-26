@@ -29,6 +29,7 @@ import androidx.navigation.navigation
 import com.example.expensetracker.presentation.addTransaction.AddTransactionRoute
 import com.example.expensetracker.presentation.home.HomeRoute
 import com.example.expensetracker.presentation.register.RegisterRouter
+import com.example.expensetracker.ui.navigation.Screen
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
@@ -67,7 +68,7 @@ class MainActivity : ComponentActivity() {
             }
             return
         }
-        val startDest = if (loginState == LoginState.LoggedIn) "HOME_GRAPH" else "REGISTER_GRAPH"
+        val startDest = if (loginState == LoginState.LoggedIn) Screen.Home.route else Screen.Register.route
         NavHost(navHostController, startDestination = startDest) {
             homeGraph(navHostController)
             registerGraph(navHostController)
@@ -76,28 +77,22 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun NavGraphBuilder.homeGraph(navHostController: NavHostController) {
-        navigation(startDestination = "HOME", route = "HOME_GRAPH") {
-            composable("HOME") {
-                HomeRoute { navHostController.navigate("FORM") }
-            }
+        composable(Screen.Home.route) {
+            HomeRoute { navHostController.navigate(Screen.Form.route) }
         }
     }
 
     private fun NavGraphBuilder.registerGraph(navHostController: NavHostController) {
-        navigation(startDestination = "REGISTER", route = "REGISTER_GRAPH") {
-            composable("REGISTER") {
-                RegisterRouter {
-                    navHostController.popBackStack()
-                }
+        composable(Screen.Register.route) {
+            RegisterRouter {
+                navHostController.popBackStack()
             }
         }
     }
 
     private fun NavGraphBuilder.formGraph(navHostController: NavHostController) {
-        navigation(startDestination = "FORM", route = "FORM_GRAPH") {
-            composable("FORM") {
-                AddTransactionRoute { navHostController.popBackStack() }
-            }
+        composable(Screen.Form.route) {
+            AddTransactionRoute { navHostController.popBackStack() }
         }
     }
 }
