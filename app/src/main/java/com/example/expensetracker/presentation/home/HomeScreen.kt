@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -46,11 +47,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -85,12 +92,15 @@ private fun HomeScreen(
     Scaffold(
         topBar = { HomeTopBar(userInfo) },
         floatingActionButton = {
-            FloatingActionButton(onClick = onNavigationClick) {
+            FloatingActionButton(
+                onClick = onNavigationClick,
+                modifier = Modifier.offset(y = 48.dp)
+            ) {
                 Icon(Icons.Default.Add, contentDescription = null)
             }
         },
         floatingActionButtonPosition = FabPosition.Center,
-        bottomBar = { HomeBottomBar() }
+        bottomBar = {}
     ) { padding ->
 
 
@@ -142,6 +152,8 @@ private fun HomeScreen(
     }
 
 }
+
+private fun Dp.toPx(): Float = this.value
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -350,5 +362,29 @@ private fun CustomIcon(
             modifier = Modifier.size(iconSize)
         )
     }
+}
+
+class BottomAppBarCutoutShape(private val radiusPx: Float) : Shape {
+    override fun createOutline(
+        size: Size,
+        layoutDirection: LayoutDirection,
+        density: Density
+    ): Outline {
+        val path = Path().apply {
+            moveTo(0f, 0f)
+            lineTo(size.width / 2 - radiusPx, 0f)
+            cubicTo(
+                size.width / 2 - radiusPx / 2f, radiusPx * 1.5f,
+                size.width / 2 + radiusPx / 2f, radiusPx * 1.5f,
+                size.width / 2 + radiusPx / 2f, 0f,
+            )
+            lineTo(size.width, 0f)
+            lineTo(size.width, size.height)
+            lineTo(0f, size.height)
+            close()
+        }
+        return Outline.Generic(path)
+    }
+
 }
 

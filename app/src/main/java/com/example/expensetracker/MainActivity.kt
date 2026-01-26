@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
         }
         enableEdgeToEdge()
         setContent {
-            ExpenseTrackerTheme() {
+            ExpenseTrackerTheme(darkTheme = true) {
                 RootNavHost(mainViewModel)
             }
         }

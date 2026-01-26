@@ -89,7 +89,7 @@ fun AddTransactionRoute(
                 withDismissAction = true,
                 duration = SnackbarDuration.Short
             )
-            addTransactionViewModel.resetMessage()
+            addTransactionViewModel.resetForm()
         }
     }
     AddTransactionScreen(

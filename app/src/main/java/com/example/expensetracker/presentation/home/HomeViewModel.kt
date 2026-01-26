@@ -69,7 +69,12 @@ class HomeViewModel @Inject constructor(
             launch {
                 _selectedPeriod
                     .flatMapLatest { newPeriod -> getTransactionByPeriod(newPeriod) }
-                    .onEach { trs -> _state.update { it.copy(transactions = trs.map { transaction ->  transaction.toUi() }) } }
+                    .onEach { trs -> _state.update { it.copy(transactions = trs.map { transaction -> transaction.toUi() },
+                        totalsSpentForPeriod = trs.map { transaction -> transaction.toUi() }
+                            .calculateTotalExpense()
+                    )
+                    }
+                    }
                     .collect()
             }
             getBalanceSummary()
@@ -130,7 +135,7 @@ data class BalanceSummaryAndDailyTotalsUiState(
     val totalSpentTodayIncome: Long = 0,
     val totalSpentTodayExpense: Long = 0,
 
-)
+    )
 
 data class HomeUiState(
     val balance: Long = 0,
@@ -138,7 +143,7 @@ data class HomeUiState(
     val totalsSpentForPeriod: Long = 0,
     val transactions: List<TransactionItemUState> = listOf(),
     val isLoading: Boolean = false,
-    val period : PeriodRange = PeriodRange.TODAY
+    val period: PeriodRange = PeriodRange.TODAY
 )
 
 data class TransactionItemUState(

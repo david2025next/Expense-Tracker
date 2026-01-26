@@ -110,7 +110,6 @@ class AddTransactionViewModel @Inject constructor(
                 .fold(
                     onSuccess = {
                         _state.update { it.copy(message = "${state.value.transactionType.displayName} ajoute avec success") }
-                        resetForm()
                     },
                     onFailure = { error ->
                         _state.update { it.copy(message = error.message, amountError = "") }
@@ -119,11 +118,7 @@ class AddTransactionViewModel @Inject constructor(
         }
     }
 
-    fun resetMessage(){
-        _state.update {it.copy(message = null)}
-    }
-
-    private fun resetForm(){
+    fun resetForm(){
         _state.update{ AddTransactionUiState() }
     }
 }
