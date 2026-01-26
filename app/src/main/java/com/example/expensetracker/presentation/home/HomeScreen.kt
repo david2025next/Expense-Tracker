@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDownward
@@ -385,6 +386,9 @@ fun TransactionItem(
 ) {
 
     ListItem(
+        modifier = Modifier.clip(RoundedCornerShape(16.dp)),
+        tonalElevation = 2.dp,
+        shadowElevation = 4.dp,
         headlineContent = {
             Text(
                 text = transactionItemUState.description,
