@@ -6,4 +6,7 @@ data class BalanceSummary(
 ){
     val balance : Long
         get() = totalIncome-totalExpense
+
+    val percent : Float
+        get() = totalExpense/totalIncome.toFloat()
 }

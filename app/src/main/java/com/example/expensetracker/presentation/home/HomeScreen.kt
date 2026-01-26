@@ -10,34 +10,30 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -49,16 +45,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -70,12 +60,10 @@ import com.example.expensetracker.utils.toCurrency
 @Composable
 fun HomeRoute(homeViewModel: HomeViewModel = hiltViewModel(), goToForm: () -> Unit) {
 
-    val balanceSummaryAndDailyTotals by homeViewModel.balanceSummaryAndDailyTotals.collectAsStateWithLifecycle()
-    val transactions by homeViewModel.transactions.collectAsStateWithLifecycle()
+    val state by homeViewModel.state.collectAsStateWithLifecycle()
     val userInfo by homeViewModel.userInfo.collectAsStateWithLifecycle()
     HomeScreen(
-        balanceSummaryAndDailyTotals = balanceSummaryAndDailyTotals,
-        transactions = transactions,
+        homeUiState = state,
         onNavigationClick = goToForm,
         userInfo = userInfo,
         onPeriodSelected = homeViewModel::selectedPeriodChanged
@@ -85,260 +73,167 @@ fun HomeRoute(homeViewModel: HomeViewModel = hiltViewModel(), goToForm: () -> Un
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeScreen(
-    balanceSummaryAndDailyTotals: BalanceSummaryAndDailyTotalsUiState,
-    transactions: List<TransactionItemUState>,
+    homeUiState: HomeUiState,
     userInfo: UserInfo,
     onPeriodSelected: (PeriodRange) -> Unit,
     onNavigationClick: () -> Unit
 ) {
-
     Scaffold(
-        bottomBar = {
-            CustomNavBar(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .navigationBarsPadding(),
-                navBarItems = listOf(
-                    NavBarItem(Icons.Default.Home, "Home"),
-                    NavBarItem(Icons.Default.BarChart, "Statistics"),
-                )
-            )
+        topBar = { HomeTopBar(userInfo) },
+        floatingActionButton = {
+            FloatingActionButton(onClick = onNavigationClick) {
+                Icon(Icons.Default.Add, contentDescription = null)
+            }
         },
-        topBar = {
-            TopAppBar(
-                title = {
+        bottomBar = { HomeBottomBar() }
+    ) { padding ->
 
-                    Column(
-                        modifier = Modifier.padding(start = 5.dp)
-                    ) {
-                        Text(
-                            text = "Salut ${userInfo.username}",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Text(
-                            text = "Faites le suivi de vos revenus et depenses",
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    }
-                },
-                navigationIcon = {
-                    ProfileImagePicker(
-                        size = 50.dp,
-                        iconSize = 0.dp,
-                        imageUri = userInfo.imageProfile,
-                        modifier = Modifier.padding(start = 5.dp)
+        if (homeUiState.isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+
+            LazyColumn(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(16.dp)
+            ) {
+
+                item {
+                    PeriodFilterSelector(
+                        periodsFilter = PeriodRange.entries.toTypedArray(),
+                        onPeriodSelected = onPeriodSelected
                     )
                 }
-            )
-        },
-        floatingActionButtonPosition = FabPosition.Center,
-        floatingActionButton = {
-            FloatingActionButton(
-                shape = CircleShape,
-                modifier = Modifier.offset(y = 45.dp),
-                onClick = onNavigationClick
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    "Add"
-                )
-            }
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-        ) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Box(modifier = Modifier.padding(16.dp)) {
-                TransactionOverviewCard(
-                    totalBalance = balanceSummaryAndDailyTotals.balance,
-                    totalIncome = balanceSummaryAndDailyTotals.income,
-                    totalExpense = balanceSummaryAndDailyTotals.expense
-                )
-            }
 
-            DailySpendIndicator(
-                balanceSummaryAndDailyTotals.totalSpentTodayIncome,
-                balanceSummaryAndDailyTotals.totalSpentTodayExpense
-            )
+                item {
+                    BalanceCard(
+                        balance = homeUiState.balance,
+                        percent = homeUiState.percent
+                    )
+                }
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = homeUiState.period.displayName,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "-${homeUiState.totalsSpentForPeriod.toCurrency()} F",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            PeriodFilterSelector(
-                periodsFilter = PeriodRange.entries.toTypedArray(),
-                onPeriodSelected = onPeriodSelected
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-            LazyColumn {
-                items(transactions) { transaction ->
-                    TransactionItem(transaction)
+                items(homeUiState.transactions) {
+                    TransactionItem(it)
                 }
             }
         }
+
     }
 }
 
-@Composable
-fun BottomNav() {
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HomeTopBar(userInfo: UserInfo) {
+    TopAppBar(
+        title = {
+            Column(
+                modifier = Modifier.padding(horizontal = 8.dp)
+            ) {
+                Text(
+                    text = "Salut ${userInfo.username}",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = "Suivi de vos finances",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
+        navigationIcon = {
+            ProfileImagePicker(
+                size = 40.dp,
+                iconSize = 0.dp,
+                imageUri = userInfo.imageProfile,
+                modifier = Modifier.padding(start = 8.dp)
+            )
+        }
+    )
 }
 
-@Composable
-private fun Header(image: ImageBitmap, name: String) {
-}
 
 @Composable
-private fun TransactionOverviewCard(
-    totalBalance: Long,
-    totalIncome: Long,
-    totalExpense: Long,
-    modifier: Modifier = Modifier
+private fun BalanceCard(
+    balance: Long,
+    percent: Float
 ) {
-
     ElevatedCard(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-        ),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.elevatedCardElevation(6.dp)
     ) {
         Column(
-            modifier = Modifier.padding(20.dp),
+            modifier = Modifier.padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = stringResource(R.string.totalbalance),
                 style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "${totalBalance.toCurrency()} FCFA",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                OverviewStatItem(
-                    label = stringResource(R.string.revenuDisplayName),
-                    amount = totalIncome,
-                    icon = Icons.Default.ArrowUpward,
-                    color = Color(0xFF2E7D32)
-                )
-                OverviewStatItem(
-                    label = stringResource(R.string.expenseDisplayName),
-                    amount = totalExpense,
-                    icon = Icons.Default.ArrowDownward,
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun OverviewStatItem(
-    label: String,
-    amount: Long,
-    icon: ImageVector,
-    color: Color
-) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        CustomIcon(
-            icon = icon,
-            size = 32.dp,
-            backgroundColor = color.copy(alpha = 0.15f),
-            tint = color,
-            iconSize = 18.dp
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Column {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
+            Spacer(Modifier.height(8.dp))
+
             Text(
-                text = "${amount.toCurrency()} F",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
+                text = "${balance.toCurrency()} FCFA",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            LinearProgressIndicator(
+                progress = { percent },
+                modifier = Modifier.fillMaxWidth(),
+                color = ProgressIndicatorDefaults.linearColor,
+                trackColor = ProgressIndicatorDefaults.linearTrackColor,
+                strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
             )
         }
     }
 }
 
-@Composable
-fun DailySpendIndicator(totalSpentTodayIncome: Long, totalSpentTodayExpense: Long) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = stringResource(R.string.today),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 12.dp)
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            TransactionTodaySummary(
-                Icons.Default.ArrowUpward,
-                stringResource(R.string.enterTransaction),
-                totalSpentTodayIncome,
-                Color(0xFF2E7D32)
-            )
-            TransactionTodaySummary(
-                Icons.Default.ArrowDownward,
-                stringResource(R.string.outTransaction),
-                totalSpentTodayExpense,
-                MaterialTheme.colorScheme.error
-            )
-        }
-    }
-}
 
 @Composable
-private fun TransactionTodaySummary(
-    icon: ImageVector,
-    label: String,
-    amount: Long,
-    color: Color
-) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = color,
-            modifier = Modifier.size(16.dp)
+fun HomeBottomBar() {
+    NavigationBar {
+        NavigationBarItem(
+            selected = true,
+            onClick = {},
+            icon = { Icon(Icons.Default.Home, null) },
+            label = { Text("Home") }
         )
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = "${amount.toCurrency()} F",
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = color
+        NavigationBarItem(
+            selected = false,
+            onClick = {},
+            icon = { Icon(Icons.Default.BarChart, null) },
+            label = { Text("Stats") }
         )
     }
 }
@@ -351,13 +246,13 @@ fun PeriodFilterSelector(
 ) {
 
     var period by rememberSaveable { mutableStateOf(PeriodRange.TODAY.displayName) }
-    LazyRow(
+    Row(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp)
-    ) {
-        items(periodsFilter) { periodFilter ->
-            val isSelected = period == periodFilter.displayName
+        horizontalArrangement = Arrangement.SpaceBetween,
+
+        ) {
+        periodsFilter.forEach { periodFilter ->
+            val isSelected = periodFilter.displayName == period
             FilterChip(
                 selected = isSelected,
                 onClick = {
@@ -376,17 +271,18 @@ fun PeriodFilterSelector(
                 )
             )
         }
+
     }
 }
 
 @Composable
 fun TransactionItem(
     transactionItemUState: TransactionItemUState,
-    modifier: Modifier = Modifier
 ) {
 
     ListItem(
-        modifier = Modifier.clip(RoundedCornerShape(16.dp)),
+        modifier = Modifier
+            .clip(RoundedCornerShape(16.dp)),
         tonalElevation = 2.dp,
         shadowElevation = 4.dp,
         headlineContent = {
@@ -433,27 +329,6 @@ fun TransactionItem(
             )
         }
     )
-//    Row(
-//        modifier = modifier
-//            .fillMaxWidth()
-//            .padding(vertical = 8.dp, horizontal = 16.dp),
-//        verticalAlignment = Alignment.CenterVertically
-//    ) {
-//
-//
-//        Spacer(Modifier.width(16.dp))
-//
-//        Column(
-//            modifier = Modifier.weight(1f),
-//        ) {
-//
-//            Row(verticalAlignment = Alignment.CenterVertically) {
-//
-//            }
-//        }
-//
-//
-//    }
 }
 
 @Composable
@@ -479,91 +354,6 @@ private fun CustomIcon(
             tint = tint,
             modifier = Modifier.size(iconSize)
         )
-    }
-}
-
-data class NavBarItem(val icon: ImageVector, val text: String)
-
-@Composable
-fun CustomNavBar(modifier: Modifier = Modifier, navBarItems: List<NavBarItem>) {
-
-    require(navBarItems.size % 2 == 0)
-
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = modifier
-            .fillMaxWidth()
-            .drawBehind {
-                val navBarHeight = 64.dp.toPx()
-                val fabSize = 56.dp.toPx()
-                val fabOffset = 40.dp.toPx()
-                val fabPadding = 8.dp.toPx()
-
-                val cutoutRadius = (fabSize / 2) + fabPadding
-                val cutoutCenterX = size.width / 2f
-                val cutoutCenterY = navBarHeight - fabOffset
-
-                val path = Path().apply {
-                    moveTo(0f, 0f)
-                    lineTo(size.width, 0f)
-                    lineTo(size.width, navBarHeight)
-                    lineTo(cutoutCenterX + cutoutRadius, navBarHeight)
-
-                    arcTo(
-                        rect = Rect(
-                            left = cutoutCenterX - cutoutRadius,
-                            top = cutoutCenterY - cutoutRadius,
-                            right = cutoutCenterX + cutoutRadius,
-                            bottom = cutoutCenterY + cutoutRadius
-                        ),
-                        startAngleDegrees = 0f,
-                        sweepAngleDegrees = -180f,
-                        forceMoveTo = false
-                    )
-
-                    lineTo(0f, navBarHeight)
-                    close()
-
-                }
-
-                drawPath(path = path, color = Color.White, style = Fill)
-            }
-
-    ) {
-        NavigationBar(
-            //containerColor = MaterialTheme.colorScheme.background
-        ) {
-            navBarItems.forEach {
-                NavigationBarItem(
-                    selected = false,
-                    onClick = {},
-                    icon = {
-                        Icon(
-                            imageVector = it.icon,
-                            contentDescription = null,
-                            //tint = MaterialTheme.colorScheme.primary,
-                        )
-                    },
-                    label = {
-                        Text(text = it.text,)
-                    }
-                )
-            }
-        }
-//        navBarItems.forEach {
-//            Column(
-//                horizontalAlignment = Alignment.CenterHorizontally,
-//                modifier = Modifier
-//                    .padding(5.dp)
-//            ) {
-//                Icon(
-//                    imageVector = it.icon,
-//                    contentDescription = null,
-//                    tint = MaterialTheme.colorScheme.primary,
-//                    )
-//
-//            }
-//        }
     }
 }
 
