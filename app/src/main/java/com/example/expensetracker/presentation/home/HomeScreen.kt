@@ -1,5 +1,7 @@
 package com.example.expensetracker.presentation.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,6 +37,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -47,12 +50,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
@@ -94,13 +100,14 @@ private fun HomeScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onNavigationClick,
-                modifier = Modifier.offset(y = 48.dp)
+                modifier = Modifier,
+                shape = CircleShape
             ) {
                 Icon(Icons.Default.Add, contentDescription = null)
             }
         },
-        floatingActionButtonPosition = FabPosition.Center,
-        bottomBar = {}
+        floatingActionButtonPosition = FabPosition.End,
+        bottomBar = {HomeBottomBar()}
     ) { padding ->
 
 
@@ -364,27 +371,6 @@ private fun CustomIcon(
     }
 }
 
-class BottomAppBarCutoutShape(private val radiusPx: Float) : Shape {
-    override fun createOutline(
-        size: Size,
-        layoutDirection: LayoutDirection,
-        density: Density
-    ): Outline {
-        val path = Path().apply {
-            moveTo(0f, 0f)
-            lineTo(size.width / 2 - radiusPx, 0f)
-            cubicTo(
-                size.width / 2 - radiusPx / 2f, radiusPx * 1.5f,
-                size.width / 2 + radiusPx / 2f, radiusPx * 1.5f,
-                size.width / 2 + radiusPx / 2f, 0f,
-            )
-            lineTo(size.width, 0f)
-            lineTo(size.width, size.height)
-            lineTo(0f, size.height)
-            close()
-        }
-        return Outline.Generic(path)
-    }
 
-}
+
 
