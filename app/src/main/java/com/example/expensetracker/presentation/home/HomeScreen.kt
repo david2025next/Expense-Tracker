@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -167,9 +168,26 @@ private fun HomeScreen(
                 }
             }
 
-            items(homeUiState.transactions) {
-                TransactionItem(it)
+            if(!homeUiState.isLoading && homeUiState.transactions.isEmpty()){
+                item {
+                    Box(
+                        modifier = Modifier.fillParentMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ){
+                        Text(
+                            text = "Aucune transaction effectue",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            } else if(!homeUiState.isLoading && homeUiState.transactions.isNotEmpty()){
+
+                items(homeUiState.transactions) {
+                    TransactionItem(it)
+                }
             }
+
         }
     }
 
@@ -290,7 +308,7 @@ fun TransactionItem(
 
     ListItem(
         modifier = Modifier
-            .clip(RoundedCornerShape(16.dp)),
+            .clip(RoundedCornerShape(24.dp)),
         tonalElevation = 2.dp,
         shadowElevation = 4.dp,
         headlineContent = {

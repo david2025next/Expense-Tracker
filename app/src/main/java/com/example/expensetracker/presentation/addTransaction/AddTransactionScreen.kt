@@ -209,7 +209,7 @@ private fun AddTransactionScreen(
 
 @Preview(showBackground = true)
 @Composable
-private fun AddTransactionScreenPreview(){
+private fun AddTransactionScreenPreview() {
 
     val snackBarHostState = remember { SnackbarHostState() }
     AddTransactionScreen(
@@ -221,18 +221,16 @@ private fun AddTransactionScreenPreview(){
 }
 
 @Composable
-private fun TransactionFilterSelector(selectedTransactionTypeOrdinal : Int, onTransactionFilterChanged: (TransactionType) -> Unit) {
-
-    val containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
-    val borderColor = MaterialTheme.colorScheme.outlineVariant
+private fun TransactionFilterSelector(
+    selectedTransactionTypeOrdinal: Int,
+    onTransactionFilterChanged: (TransactionType) -> Unit
+) {
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, borderColor, RoundedCornerShape(24.dp))
             .height(48.dp)
             .clip(RoundedCornerShape(24.dp))
-            .background(containerColor)
             .padding(4.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -262,7 +260,7 @@ private fun TransactionFilterSelector(selectedTransactionTypeOrdinal : Int, onTr
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = transaction.name,
+                    text = transaction.displayName,
                     style = MaterialTheme.typography.labelLarge,
                     color = contentColor,
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
@@ -297,7 +295,7 @@ fun InputField(
             textStyle = MaterialTheme.typography.bodyLarge,
             isError = error != null,
             keyboardOptions = KeyboardOptions(
-                keyboardType = if(isNumber) KeyboardType.Number else KeyboardType.Text,
+                keyboardType = if (isNumber) KeyboardType.Number else KeyboardType.Text,
                 capitalization = KeyboardCapitalization.Words
             ),
             trailingIcon = {

@@ -1,6 +1,7 @@
 package com.example.expensetracker.domain.model
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Wifi
@@ -20,6 +21,10 @@ val expenseCategories = listOf(
     Category(
         icon = Icons.Default.Wifi,
         name = "Internet"
+    ),
+    Category(
+        Icons.Default.DirectionsCar,
+        "Transport"
     )
 )
 
