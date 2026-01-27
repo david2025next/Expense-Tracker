@@ -12,17 +12,20 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -50,12 +53,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -100,14 +105,24 @@ private fun HomeScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onNavigationClick,
-                modifier = Modifier,
+                modifier = Modifier.offset(y = 42.dp),
                 shape = CircleShape
             ) {
                 Icon(Icons.Default.Add, contentDescription = null)
             }
         },
-        floatingActionButtonPosition = FabPosition.End,
-        bottomBar = {HomeBottomBar()}
+        floatingActionButtonPosition = FabPosition.Center,
+        bottomBar = {
+            CustomNavBar(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding(),
+                navBarItems = listOf(
+                    NavBarItem(Icons.Default.Home, "Home"),
+                    NavBarItem(Icons.Default.BarChart, "Stats"),
+                )
+            )
+        }
     ) { padding ->
 
 
@@ -159,9 +174,6 @@ private fun HomeScreen(
     }
 
 }
-
-private fun Dp.toPx(): Float = this.value
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -233,24 +245,6 @@ private fun BalanceCard(
     }
 }
 
-
-@Composable
-fun HomeBottomBar() {
-    NavigationBar {
-        NavigationBarItem(
-            selected = true,
-            onClick = {},
-            icon = { Icon(Icons.Default.Home, null) },
-            label = { Text("Home") }
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = {},
-            icon = { Icon(Icons.Default.BarChart, null) },
-            label = { Text("Stats") }
-        )
-    }
-}
 
 @Composable
 fun PeriodFilterSelector(
@@ -368,6 +362,96 @@ private fun CustomIcon(
             tint = tint,
             modifier = Modifier.size(iconSize)
         )
+    }
+}
+
+data class NavBarItem(val icon: ImageVector, val text: String)
+
+@Composable
+fun CustomNavBar(modifier: Modifier = Modifier, navBarItems: List<NavBarItem>) {
+
+    val primary = MaterialTheme.colorScheme.primary
+
+    require(navBarItems.size % 2 == 0)
+
+    Row(
+        horizontalArrangement = Arrangement.SpaceAround,
+        modifier = modifier
+            .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)
+            .shadow(elevation = 10.dp, shape = RoundedCornerShape(30.dp))
+            .drawBehind {
+                val navBarHeight = 64.dp.toPx()
+                val cutoutWidth = 62.dp.toPx()
+                val cutoutHeight = 66.dp.toPx()
+                val cornerRadius = 26.dp.toPx()
+
+                val left = center.x - cutoutWidth / 2
+                val top = -cutoutHeight / 2
+                val right = center.x + cutoutWidth / 2
+                val bottom = top + cutoutHeight
+
+                val path = Path().apply {
+                    moveTo(0f, 0f)
+                    lineTo(left - cornerRadius, 0f)
+
+                    cubicTo(
+                        left, 0f,
+                        left, 0f,
+                        left, cornerRadius
+                    )
+
+                    lineTo(left, bottom - cornerRadius)
+
+                    cubicTo(
+                        left, bottom,
+                        left, bottom,
+                        left + cornerRadius, bottom
+                    )
+
+                    lineTo(right - cornerRadius, bottom)
+
+                    cubicTo(
+                        right, bottom,
+                        right, bottom,
+                        right, bottom - cornerRadius
+                    )
+
+                    lineTo(right, cornerRadius)
+
+                    cubicTo(
+                        right, 0f,
+                        right, 0f,
+                        right + cornerRadius, 0f
+                    )
+
+                    lineTo(size.width, 0f)
+                    lineTo(size.width, navBarHeight)
+                    lineTo(0f, navBarHeight)
+                    close()
+                }
+
+                drawPath(path = path, color = primary, style = Fill)
+            }
+
+    ) {
+
+
+        navBarItems.forEach {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .padding(5.dp)
+            ) {
+                Icon(
+                    imageVector = it.icon,
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    contentDescription = null,
+
+                    )
+                Text(text = it.text, color = MaterialTheme.colorScheme.onPrimary)
+            }
+
+        }
     }
 }
 
